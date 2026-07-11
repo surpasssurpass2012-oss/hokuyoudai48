@@ -39,15 +39,14 @@
     <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;800&display=swap" rel="stylesheet">
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- 追加: CSVを簡単に読み込むためのライブラリ (PapaParse) -->
+    <!-- PapaParse (CSV読み込み・書き出し用ライブラリ) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    
     <style>
         body {
             font-family: 'M PLUS Rounded 1c', sans-serif;
-            /* タップ時のハイライトを消す(スマホ特有の青いチカチカ防止) */
             -webkit-tap-highlight-color: transparent;
         }
-        /* ふわふわ浮かぶアニメーション */
         @keyframes float {
             0%, 100% { transform: translateY(0px) rotate(0deg); }
             50% { transform: translateY(-6px) rotate(1deg); }
@@ -57,7 +56,6 @@
         }
     </style>
 </head>
-<!-- overflow-x-hidden で横揺れを完全に防ぎます -->
 <body class="bg-[#FCFBF4] text-slate-700 min-h-screen flex flex-col antialiased selection:bg-yellow-200 overflow-x-hidden w-full relative">
 
     <!-- ポップなアプリヘッダー -->
@@ -75,7 +73,6 @@
                 </div>
             </div>
             
-            <!-- ユーザー状態・ログアウト (生徒バッジは非表示に設定) -->
             <div id="user-status-bar" class="hidden flex items-center gap-2 md:gap-4 flex-shrink-0">
                 <span id="user-badge" class="hidden sm:inline-block text-xs bg-amber-100 text-amber-800 border-2 border-amber-200 px-4 py-1.5 rounded-full font-bold"></span>
                 <button onclick="logout()" class="flex items-center gap-1.5 text-xs md:text-sm bg-rose-500 hover:bg-rose-600 text-white font-extrabold px-3 py-2 md:px-4 md:py-2.5 rounded-2xl shadow-md hover:shadow-lg active:scale-95 transition-all">
@@ -88,9 +85,8 @@
 
     <main class="flex-grow max-w-6xl w-full mx-auto p-4 md:p-8 flex flex-col justify-center">
         
-        <!-- ================= ログイン画面 (合言葉専用) ================= -->
+        <!-- ================= ログイン画面 ================= -->
         <section id="view-login" class="max-w-md w-full mx-auto bg-white rounded-4xl shadow-xl border-4 border-yellow-100 p-6 md:p-10 relative overflow-hidden">
-            <!-- デコレーションバルーン -->
             <div class="absolute -top-10 -right-10 w-24 h-24 bg-sky-100 rounded-full opacity-50 blur-xl pointer-events-none"></div>
             <div class="absolute -bottom-10 -left-10 w-24 h-24 bg-pink-100 rounded-full opacity-50 blur-xl pointer-events-none"></div>
 
@@ -99,7 +95,6 @@
                 <h2 class="text-2xl md:text-3xl font-extrabold text-slate-800 tracking-tight">こんにちは！</h2>
             </div>
 
-            <!-- アラートメッセージ -->
             <div id="login-alert" class="hidden mb-6 p-4 rounded-3xl text-sm bg-rose-50 text-rose-600 border-2 border-rose-100 flex items-center gap-3">
                 <span class="text-2xl flex-shrink-0">⚠️</span>
                 <span id="login-alert-text" class="font-bold">あれれ？合言葉が違うみたい。</span>
@@ -124,7 +119,6 @@
                 </button>
             </form>
 
-            <!-- URLパラメータ(?admin=true)がある時だけ表示される先生用ログインボタン -->
             <div id="admin-login-area" class="hidden mt-8 pt-6 border-t-2 border-dashed border-slate-100 text-center relative z-10">
                 <p class="text-xs font-bold text-slate-400 mb-3">管理者用メニュー</p>
                 <button onclick="handleAdminLogin()" 
@@ -135,9 +129,8 @@
             </div>
         </section>
 
-        <!-- ================= 生徒用カテゴリ一覧・詳細 ================= -->
+        <!-- ================= 生徒用画面 (現状はリンク集) ================= -->
         <section id="view-student" class="hidden space-y-5 md:space-y-8 w-full max-w-5xl mx-auto">
-            <!-- 歓迎メッセージ -->
             <div class="bg-white p-4 md:p-8 rounded-4xl shadow-sm border-4 border-yellow-100/70 flex flex-col md:flex-row md:items-center justify-between gap-4 relative overflow-hidden">
                 <div class="flex items-center gap-3 md:gap-5 relative z-10 min-w-0">
                     <span class="text-4xl md:text-5xl animate-float flex-shrink-0">🦉</span>
@@ -147,12 +140,8 @@
                 </div>
             </div>
 
-            <!-- ★スマホ対応: カテゴリ選択タブ (スマホでは1列の横長ボタン、PCでは3列に自動調整) -->
-            <div id="student-categories-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
-                <!-- JavaScriptで動的に生成 -->
-            </div>
+            <div id="student-categories-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4"></div>
 
-            <!-- カテゴリ詳細コンテンツ表示部 -->
             <div class="bg-white rounded-4xl shadow-sm border-4 border-yellow-100/70 p-4 md:p-10 relative overflow-hidden">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b-2 border-slate-100 pb-4 mb-5 gap-3">
                     <div class="flex items-center gap-3 min-w-0">
@@ -167,12 +156,8 @@
                     <span id="links-count-badge" class="self-start sm:self-auto bg-amber-100 text-amber-800 border border-amber-200 text-xs px-3 py-1.5 rounded-full font-extrabold flex-shrink-0">クエスト: 0個</span>
                 </div>
 
-                <!-- 課題ボタン一覧 -->
-                <div id="student-links-grid" class="flex flex-col gap-3 md:gap-4 max-w-3xl mx-auto w-full">
-                    <!-- JavaScriptで動的に生成 -->
-                </div>
+                <div id="student-links-grid" class="flex flex-col gap-3 md:gap-4 max-w-3xl mx-auto w-full"></div>
 
-                <!-- 課題がない場合の空状態 -->
                 <div id="student-empty-state" class="hidden flex flex-col items-center justify-center py-12 md:py-16 text-center">
                     <span class="text-5xl md:text-6xl mb-4 animate-float">💤</span>
                     <h4 class="text-base md:text-lg font-extrabold text-slate-700">準備中のクエスト</h4>
@@ -183,7 +168,6 @@
 
         <!-- ================= 管理者用画面 ================= -->
         <section id="view-admin" class="hidden space-y-6 md:space-y-8 w-full max-w-5xl mx-auto">
-            <!-- 管理画面ヘッダー -->
             <div class="bg-slate-800 text-white p-5 md:p-6 rounded-4xl shadow-md flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative overflow-hidden">
                 <div class="flex items-center gap-3.5 relative z-10 min-w-0">
                     <div class="bg-amber-400 text-slate-900 p-2.5 rounded-2xl shadow-md rotate-[-3deg] flex-shrink-0">
@@ -191,15 +175,50 @@
                     </div>
                     <div class="min-w-0">
                         <h2 class="text-lg md:text-xl font-extrabold tracking-wide truncate">管理室</h2>
-                        <p class="text-[10px] md:text-xs text-slate-300 mt-1 font-bold">課題の追加や合言葉の設定ができます。</p>
+                        <p class="text-[10px] md:text-xs text-slate-300 mt-1 font-bold">アプリ内完結型への移行準備中です！</p>
                     </div>
                 </div>
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
                 
-                <!-- 左カラム (合言葉設定・新規カテゴリ・課題追加) -->
+                <!-- 左カラム -->
                 <div class="space-y-6">
+                    
+                    <!-- CSV一括管理パネル (新規追加) -->
+                    <div class="bg-white rounded-4xl shadow-sm border-4 border-emerald-200 p-5 md:p-6">
+                        <h3 class="text-base font-extrabold text-slate-800 mb-4 flex items-center gap-2 border-b-2 border-slate-100 pb-3">
+                            <i data-lucide="database" class="text-emerald-500 w-5 h-5"></i>
+                            <span>問題データ (CSV) 管理</span>
+                        </h3>
+                        
+                        <div class="space-y-3">
+                            <p class="text-xs font-bold text-slate-500 mb-2">① 形式がわからない時はここから</p>
+                            <button onclick="exportCSV(true)" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-extrabold py-2.5 px-4 rounded-2xl transition-all flex items-center justify-center gap-2 text-xs border-2 border-slate-200">
+                                <i data-lucide="download" class="w-4 h-4"></i>
+                                <span>テンプレートをダウンロード</span>
+                            </button>
+
+                            <!-- ▼ これが出力ボタンです ▼ -->
+                            <p class="text-xs font-bold text-slate-500 mt-4 mb-2">② 登録済みの全データをバックアップ</p>
+                            <button onclick="exportCSV(false)" class="w-full bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-extrabold py-2.5 px-4 rounded-2xl transition-all flex items-center justify-center gap-2 text-xs border-2 border-emerald-200">
+                                <i data-lucide="file-down" class="w-4 h-4"></i>
+                                <span>登録済みの全データを出力</span>
+                            </button>
+                            <!-- ▲ これが出力ボタンです ▲ -->
+
+                            <div class="border-t-2 border-dashed border-slate-100 my-4"></div>
+
+                            <p class="text-xs font-bold text-slate-500 mb-2">③ CSVファイルをアップロードして一括登録</p>
+                            <input type="file" id="csv-file" accept=".csv" class="hidden" onchange="handleCSVUpload(event)">
+                            <label for="csv-file" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold py-3 px-4 rounded-2xl shadow-md active:scale-[0.97] transition-all flex items-center justify-center gap-2 text-sm cursor-pointer">
+                                <i data-lucide="upload-cloud" class="w-4 h-4"></i>
+                                <span>CSVを選んで一括登録</span>
+                            </label>
+                            <p class="text-[9px] text-slate-400 font-bold mt-1 leading-snug">※同じ「id」のデータは上書き更新されます。</p>
+                        </div>
+                    </div>
+
                     <!-- 合言葉の変更設定 -->
                     <div class="bg-white rounded-4xl shadow-sm border-4 border-rose-100 p-5 md:p-6">
                         <h3 class="text-base font-extrabold text-slate-800 mb-4 flex items-center gap-2 border-b-2 border-slate-100 pb-3">
@@ -272,62 +291,6 @@
                             </button>
                         </form>
                     </div>
-
-                    <!-- 課題追加フォーム -->
-                    <div class="bg-white rounded-4xl shadow-sm border-4 border-blue-100 p-5 md:p-6">
-                        <h3 class="text-base font-extrabold text-slate-800 mb-4 flex items-center gap-2 border-b-2 border-slate-100 pb-3">
-                            <i data-lucide="plus-circle" class="text-blue-500 w-5 h-5"></i>
-                            <span>新しく課題を追加する</span>
-                        </h3>
-
-                        <form onsubmit="handleCreateLink(event)" class="space-y-4">
-                            <div>
-                                <label class="block text-xs font-extrabold text-slate-600 mb-1.5">追加先カテゴリ</label>
-                                <select id="form-category" required 
-                                    class="w-full px-4 py-3 rounded-2xl border-3 border-slate-100 focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-400 text-xs bg-slate-50 text-slate-700 font-bold">
-                                </select>
-                            </div>
-
-                            <div>
-                                <label class="block text-xs font-extrabold text-slate-600 mb-1.5">ボタンのタイトル</label>
-                                <input type="text" id="form-title" required placeholder="例: 第3章 関係代名詞"
-                                    class="w-full px-4 py-3 rounded-2xl border-3 border-slate-100 focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-400 text-sm text-slate-700 font-bold bg-slate-50">
-                            </div>
-
-                            <div>
-                                <label class="block text-xs font-extrabold text-slate-600 mb-1.5">URL</label>
-                                <input type="url" id="form-url" required placeholder="https://..."
-                                    class="w-full px-4 py-3 rounded-2xl border-3 border-slate-100 focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-400 text-sm text-slate-700 font-bold bg-slate-50">
-                            </div>
-
-                            <button type="submit"
-                                class="w-full bg-blue-500 hover:bg-blue-600 text-white font-extrabold py-3.5 px-4 rounded-2xl shadow-md active:scale-[0.97] transition-all flex items-center justify-center gap-2 text-sm mt-4">
-                                <i data-lucide="plus" class="w-4 h-4"></i>
-                                <span>課題ボタンを追加</span>
-                            </button>
-                        </form>
-                    </div>
-
-                    <!-- 新機能: CSV一括アップロードフォーム -->
-                    <div class="bg-white rounded-4xl shadow-sm border-4 border-emerald-100 p-5 md:p-6">
-                        <h3 class="text-base font-extrabold text-slate-800 mb-4 flex items-center gap-2 border-b-2 border-slate-100 pb-3">
-                            <i data-lucide="file-spreadsheet" class="text-emerald-500 w-5 h-5"></i>
-                            <span>問題データをCSVで一括登録</span>
-                        </h3>
-                        <div class="space-y-4">
-                            <p class="text-[11px] text-slate-500 font-bold leading-relaxed">
-                                Excelで作ったアプリデータを「CSV（カンマ区切り）」形式で保存し、ここでアップロードしてください。<br>
-                                <span class="text-rose-500">※同じIDの問題は上書きされます。</span>
-                            </p>
-                            <input type="file" id="csv-file" accept=".csv"
-                                class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-extrabold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 cursor-pointer">
-                            <button onclick="handleCSVUpload()" id="csv-upload-btn"
-                                class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold py-3.5 px-4 rounded-2xl shadow-md active:scale-[0.97] transition-all flex items-center justify-center gap-2 text-sm">
-                                <i data-lucide="upload-cloud" class="w-4 h-4"></i>
-                                <span>CSVを読み込んで登録</span>
-                            </button>
-                        </div>
-                    </div>
                 </div>
 
                 <!-- 登録済みリンク・カテゴリ管理 (中・右カラム) -->
@@ -341,52 +304,6 @@
                         </h3>
                         <div id="admin-categories-list" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <!-- JavaScriptで動的に生成 -->
-                        </div>
-                    </div>
-
-                    <!-- 課題リストエリア -->
-                    <div>
-                        <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b-2 border-slate-100 pb-3 mb-4 gap-3">
-                            <h3 class="text-base md:text-lg font-extrabold text-slate-800 flex items-center gap-2">
-                                <i data-lucide="list" class="text-purple-500 w-5 h-5"></i>
-                                <span>現在登録されている課題の一覧</span>
-                            </h3>
-                            <div class="flex items-center gap-2 flex-shrink-0">
-                                <span id="total-badge" class="bg-purple-50 text-purple-700 border-2 border-purple-100 text-xs px-3.5 py-1.5 rounded-full font-extrabold">合計 0個</span>
-                            </div>
-                        </div>
-
-                        <!-- 💡 並べ替えアナウンス -->
-                        <div id="reorder-tip" class="mb-4 p-3.5 bg-yellow-50 text-amber-800 border-2 border-yellow-200 rounded-2xl text-xs font-bold flex items-start gap-2">
-                            <span class="text-base leading-none">💡</span>
-                            <p class="leading-normal">
-                                <span class="text-amber-700">【順序の並べ替え方法】</span><br>
-                                下のフィルターから特定のカテゴリを選択すると、課題の横に **「↑」「↓」ボタン** が現れて自由に並べ替えできるようになります！
-                            </p>
-                        </div>
-
-                        <!-- 管理画面でのカテゴリクイックフィルター -->
-                        <div id="admin-filter-bar" class="flex flex-wrap gap-2 mb-4">
-                            <!-- JavaScriptで動的に生成 -->
-                        </div>
-
-                        <!-- リンク管理テーブル / リスト -->
-                        <div class="overflow-x-auto border-2 border-slate-100 rounded-3xl">
-                            <div class="min-w-[500px]">
-                                <div class="bg-slate-50 px-5 py-3 text-xs font-extrabold text-slate-500 grid grid-cols-12 gap-2 border-b border-slate-100">
-                                    <div class="col-span-3">カテゴリ</div>
-                                    <div class="col-span-6">課題名 (ボタンタイトル)</div>
-                                    <div class="col-span-3 text-right">操作</div>
-                                </div>
-                                <div id="admin-links-list" class="divide-y divide-slate-100 max-h-[400px] overflow-y-auto">
-                                    <!-- JavaScriptで動的に表示 -->
-                                </div>
-                            </div>
-                            <!-- リンクが無い時の表示 -->
-                            <div id="admin-empty-state" class="hidden flex flex-col items-center justify-center py-16 text-center text-slate-400 w-full">
-                                <span class="text-4xl mb-2">🎈</span>
-                                <p class="text-sm font-bold">まだリンクが1つも登録されていません。</p>
-                            </div>
                         </div>
                     </div>
 
@@ -411,7 +328,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, signInAnonymously, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, doc, setDoc, getDoc, addDoc, updateDoc, deleteDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, doc, setDoc, getDoc, addDoc, updateDoc, deleteDoc, onSnapshot, query, orderBy, getDocs, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyASh1lccxmKlJuzpEX5g3kdPDR7Dtn5x2U",
@@ -426,34 +343,27 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // 状態管理
         let currentUser = null;
         let isAdmin = false;
         let systemPasscode = ""; 
         let localCategories = [];
         let localLinks = [];
         let activeCategory = null;
-        let adminFilter = 'all';
 
-        // URLパラメータによる管理者ボタンの表示制御
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('admin') === 'true') {
             document.getElementById('admin-login-area').classList.remove('hidden');
         }
 
-        // 初期化処理
         onAuthStateChanged(auth, (user) => {
             currentUser = user;
             if (user && !user.isAnonymous) {
-                // Googleログイン済（先生）
                 isAdmin = true;
                 showAdminView();
             } else if (user && user.isAnonymous) {
-                // 匿名ログイン済（生徒）
                 isAdmin = false;
                 showStudentView();
             } else {
-                // 未ログイン
                 isAdmin = false;
                 showLoginView();
             }
@@ -461,7 +371,6 @@
             fetchPasscode();
         });
 
-        // 合言葉の取得
         async function fetchPasscode() {
             try {
                 const docRef = doc(db, 'settings', 'passcode');
@@ -472,7 +381,6 @@
                         document.getElementById('admin-passcode').value = systemPasscode;
                     }
                 } else {
-                    // 初回作成
                     await setDoc(docRef, { value: 'hoku48' });
                     systemPasscode = 'hoku48';
                     if(document.getElementById('admin-passcode')) document.getElementById('admin-passcode').value = 'hoku48';
@@ -482,16 +390,13 @@
             }
         }
 
-        // データのリアルタイム同期
         function syncFirestoreData() {
-            // カテゴリ同期
             const catRef = collection(db, 'categories');
             onSnapshot(catRef, (snapshot) => {
                 localCategories = [];
                 snapshot.forEach(doc => {
                     localCategories.push({ docId: doc.id, ...doc.data() });
                 });
-                // order順にソート
                 localCategories.sort((a, b) => (a.order || 0) - (b.order || 0));
                 
                 if (localCategories.length > 0 && !activeCategory) {
@@ -500,7 +405,6 @@
                 updateUI();
             });
 
-            // リンク同期
             const linkRef = collection(db, 'links');
             onSnapshot(linkRef, (snapshot) => {
                 localLinks = [];
@@ -511,24 +415,18 @@
             });
         }
 
-        // ==================== ログイン制御 ====================
-
-        // 生徒の合言葉ログイン
         window.handleStudentLogin = async function(e) {
             e.preventDefault();
             const inputPass = document.getElementById("login-passcode").value.trim();
             const alertBox = document.getElementById("login-alert");
 
-            if (systemPasscode === "") {
-                await fetchPasscode();
-            }
+            if (systemPasscode === "") await fetchPasscode();
 
             if (inputPass === systemPasscode) {
                 try {
                     await signInAnonymously(auth);
                     alertBox.classList.add("hidden");
                 } catch (error) {
-                    console.error("Login error:", error);
                     alert("ログイン処理に失敗しました。");
                 }
             } else {
@@ -536,25 +434,21 @@
             }
         }
 
-        // 先生のGoogleログイン
         window.handleAdminLogin = async function() {
             const provider = new GoogleAuthProvider();
             try {
                 await signInWithPopup(auth, provider);
             } catch (error) {
-                console.error("Admin login error:", error);
-                alert("認証エラーが発生しました。VercelのドメインがFirebaseに許可されているか確認してください。");
+                alert("認証エラーが発生しました。");
             }
         }
 
-        // ログアウト
         window.logout = async function() {
             await signOut(auth);
             document.getElementById("login-passcode").value = "";
             document.getElementById("login-alert").classList.add("hidden");
         }
 
-        // 画面切り替え
         function showLoginView() {
             document.getElementById("view-login").classList.remove("hidden");
             document.getElementById("view-student").classList.add("hidden");
@@ -567,9 +461,7 @@
             document.getElementById("view-student").classList.remove("hidden");
             document.getElementById("view-admin").classList.add("hidden");
             document.getElementById("user-status-bar").classList.remove("hidden");
-            
-            const badge = document.getElementById("user-badge");
-            badge.className = "hidden"; // 生徒はバッジなし
+            document.getElementById("user-badge").className = "hidden";
             updateUI();
         }
 
@@ -585,32 +477,172 @@
             updateUI();
         }
 
-        // ==================== 管理者用機能 ====================
-
-        // 合言葉の変更
         window.handleUpdatePasscode = async function(e) {
             e.preventDefault();
             const newPass = document.getElementById("admin-passcode").value.trim();
             if (!newPass) return;
-
             try {
-                const docRef = doc(db, 'settings', 'passcode');
-                await setDoc(docRef, { value: newPass });
+                await setDoc(doc(db, 'settings', 'passcode'), { value: newPass });
                 systemPasscode = newPass;
                 showToast("合言葉を更新しました！🔑");
             } catch (error) {
-                console.error("Passcode update error:", error);
                 showToast("更新に失敗しました");
             }
         }
 
-        // 生徒用カテゴリの切替
+        // ==================== ★ CSV 出力・バックアップ機能 ★ ====================
+        window.exportCSV = async function(isTemplate = false) {
+            if (typeof Papa === 'undefined') {
+                showToast("読み込み中です。少し待ってからお試しください。");
+                return;
+            }
+
+            const headers = ["id", "main_category", "sub_category", "type", "question", "sentence", "answer1", "answer2", "option1", "option2", "option3", "option4", "option5", "option6", "option7", "option8", "explanation"];
+            let dataToExport = [];
+
+            if (isTemplate) {
+                let dummy = {};
+                headers.forEach(h => dummy[h] = "");
+                dummy.id = "1001";
+                dummy.main_category = "語法・文法";
+                dummy.sub_category = "1 動詞の語法①";
+                dummy.type = "default";
+                dummy.question = "次の（ ）に入る最も適切な語を選びなさい";
+                dummy.sentence = "Let's ( ) the program tomorrow.";
+                dummy.answer1 = "discuss";
+                dummy.option1 = "discuss";
+                dummy.option2 = "talk";
+                dummy.option3 = "discuss of";
+                dummy.option4 = "chat";
+                dummy.explanation = "【訳】あとでその計画について話し合おう。 discussは他動詞なので前置詞は不要。";
+                dataToExport.push(dummy);
+            } else {
+                showToast("データを集めています...");
+                try {
+                    const qSnap = await getDocs(collection(db, 'questions'));
+                    qSnap.forEach(doc => {
+                        const data = doc.data();
+                        let row = {};
+                        headers.forEach(h => {
+                            row[h] = data[h] || ""; 
+                        });
+                        dataToExport.push(row);
+                    });
+                    
+                    if (dataToExport.length === 0) {
+                        showToast("まだ問題が1つも登録されていません。");
+                        return;
+                    }
+                } catch (error) {
+                    console.error("Fetch error:", error);
+                    showToast("データの取得に失敗しました。");
+                    return;
+                }
+            }
+
+            const csv = Papa.unparse({ fields: headers, data: dataToExport }, { quotes: true });
+            const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
+            const blob = new Blob([bom, csv], { type: "text/csv;charset=utf-8;" });
+            
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = isTemplate ? "template_english_space.csv" : "backup_english_space_questions.csv";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            showToast(isTemplate ? "テンプレートをダウンロードしました📥" : "全データを出力しました！📥");
+        }
+
+        // ==================== ★ CSV 一括アップロード機能 ★ ====================
+        window.handleCSVUpload = function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            showToast("CSVを解析しています...");
+            
+            Papa.parse(file, {
+                header: true,
+                skipEmptyLines: true,
+                complete: async function(results) {
+                    const data = results.data;
+                    if (data.length === 0) {
+                        showToast("エラー: データが空です");
+                        return;
+                    }
+
+                    if (!data[0].hasOwnProperty("id") && !data[0].hasOwnProperty("main_category")) {
+                        showToast("エラー: 列名（1行目）が間違っています。テンプレートを確認してください。");
+                        return;
+                    }
+
+                    showToast(`${data.length}件の登録を開始します...`);
+                    
+                    try {
+                        let batch = writeBatch(db);
+                        let count = 0;
+                        
+                        for (const row of data) {
+                            if (!row.id || String(row.id).trim() === "") continue;
+                            
+                            const docId = String(row.id).trim();
+                            const docRef = doc(db, "questions", docId);
+                            
+                            batch.set(docRef, {
+                                id: docId,
+                                main_category: String(row.main_category || "").trim(),
+                                sub_category: String(row.sub_category || "").trim(),
+                                type: String(row.type || "default").trim(),
+                                question: String(row.question || "").trim(),
+                                sentence: String(row.sentence || "").trim(),
+                                answer1: String(row.answer1 || "").trim(),
+                                answer2: String(row.answer2 || "").trim(),
+                                option1: String(row.option1 || "").trim(),
+                                option2: String(row.option2 || "").trim(),
+                                option3: String(row.option3 || "").trim(),
+                                option4: String(row.option4 || "").trim(),
+                                option5: String(row.option5 || "").trim(),
+                                option6: String(row.option6 || "").trim(),
+                                option7: String(row.option7 || "").trim(),
+                                option8: String(row.option8 || "").trim(),
+                                explanation: String(row.explanation || "").trim(),
+                                updatedAt: new Date().toISOString()
+                            });
+                            
+                            count++;
+                            
+                            if (count % 450 === 0) {
+                                await batch.commit();
+                                batch = writeBatch(db);
+                            }
+                        }
+                        
+                        if (count % 450 !== 0) {
+                            await batch.commit();
+                        }
+
+                        showToast(`大成功！ ${count}件の問題を登録しました✨`);
+                        event.target.value = ""; 
+                    } catch (error) {
+                        console.error("Upload error:", error);
+                        showToast("登録中にエラーが発生しました");
+                    }
+                },
+                error: function(err) {
+                    console.error("PapaParse error:", err);
+                    showToast("CSVの読み込みに失敗しました");
+                }
+            });
+        }
+
+        // ==================== カテゴリ管理 (既存) ====================
         window.selectCategory = function(categoryKey) {
             activeCategory = categoryKey;
             updateUI();
         }
 
-        // カテゴリの追加
         window.handleCreateCategory = async function(event) {
             event.preventDefault();
             const ja = document.getElementById("cat-ja").value.trim();
@@ -646,21 +678,14 @@
             } catch (e) { console.error(e); }
         }
 
-        // カテゴリ削除
         window.deleteCategory = async function(docId, id, ja) {
             if (!confirm(`カテゴリ「${ja}」と、その中の課題をすべて削除します。よろしいですか？`)) return;
             try {
                 await deleteDoc(doc(db, 'categories', docId));
-                const matchedLinks = localLinks.filter(l => l.category === id);
-                for (const link of matchedLinks) {
-                    await deleteDoc(doc(db, 'links', link.id));
-                }
-                if (activeCategory === id && localCategories.length > 0) activeCategory = localCategories[0].id;
                 showToast("カテゴリを削除しました");
             } catch (e) { console.error(e); }
         }
 
-        // カテゴリ並べ替え
         window.moveCategoryOrder = async function(docId, direction) {
             const index = localCategories.findIndex(c => c.docId === docId);
             if (index === -1) return;
@@ -679,144 +704,7 @@
             }
         }
 
-        // 課題の追加
-        window.handleCreateLink = async function(event) {
-            event.preventDefault();
-            const category = document.getElementById("form-category").value;
-            const title = document.getElementById("form-title").value.trim();
-            const url = document.getElementById("form-url").value.trim();
-
-            const sameCatLinks = localLinks.filter(l => l.category === category);
-            const maxOrder = sameCatLinks.reduce((max, item) => ((item.order || 0) > max ? (item.order || 0) : max), 0);
-
-            try {
-                await addDoc(collection(db, 'links'), {
-                    category, title, url, order: maxOrder + 1, createdAt: new Date().toISOString()
-                });
-                document.getElementById("form-title").value = "";
-                document.getElementById("form-url").value = "";
-                showToast("課題を追加しました！");
-            } catch (e) { console.error(e); }
-        }
-
-        // 課題削除
-        window.deleteLink = async function(id) {
-            try {
-                await deleteDoc(doc(db, 'links', id));
-                showToast("課題を削除しました");
-            } catch (e) { console.error(e); }
-        }
-
-        // 課題並べ替え
-        window.moveLinkOrder = async function(id, direction) {
-            const targetLink = localLinks.find(l => l.id === id);
-            if (!targetLink) return;
-
-            const sameCatLinks = localLinks.filter(l => l.category === targetLink.category).sort((a, b) => (a.order || 0) - (b.order || 0));
-            const index = sameCatLinks.findIndex(l => l.id === id);
-            if (index === -1) return;
-
-            let swapIndex = -1;
-            if (direction === 'up' && index > 0) swapIndex = index - 1;
-            else if (direction === 'down' && index < sameCatLinks.length - 1) swapIndex = index + 1;
-
-            if (swapIndex !== -1) {
-                const swapLink = sameCatLinks[swapIndex];
-                try {
-                    await updateDoc(doc(db, 'links', targetLink.id), { order: swapLink.order || swapIndex });
-                    await updateDoc(doc(db, 'links', swapLink.id), { order: targetLink.order || index });
-                } catch (e) { console.error(e); }
-            }
-        }
-
-        window.filterAdminLinks = function(filterKey) {
-            adminFilter = filterKey;
-            updateUI();
-        }
-
-        // ==================== 新機能: CSVアップロード処理 ====================
-        window.handleCSVUpload = async function() {
-            const fileInput = document.getElementById('csv-file');
-            const file = fileInput.files[0];
-            if (!file) {
-                showToast("CSVファイルを選択してください！");
-                return;
-            }
-
-            // ボタンをローディング状態にする
-            const btn = document.getElementById('csv-upload-btn');
-            const originalText = btn.innerHTML;
-            btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i><span>読み込み中...</span>`;
-            btn.disabled = true;
-            lucide.createIcons();
-
-            // PapaParseでCSVを解析
-            Papa.parse(file, {
-                header: true,         // 1行目をヘッダー（キー名）として扱う
-                skipEmptyLines: true, // 空行を無視
-                complete: async function(results) {
-                    const data = results.data;
-                    let successCount = 0;
-                    let errorCount = 0;
-
-                    for (const row of data) {
-                        try {
-                            // IDがない行は無視（エラー防止）
-                            if (!row.id) continue;
-
-                            // Firebaseに保存するための整形
-                            const questionData = {
-                                id: String(row.id).trim(),
-                                main_category: row.main_category || "",
-                                sub_category: row.sub_category || "",
-                                type: row.type || "default",
-                                question: row.question || "",
-                                sentence: row.sentence || "",
-                                answer1: row.answer1 || "",
-                                answer2: row.answer2 || "",
-                                option1: row.option1 || "",
-                                option2: row.option2 || "",
-                                option3: row.option3 || "",
-                                option4: row.option4 || "",
-                                option5: row.option5 || "",
-                                option6: row.option6 || "",
-                                option7: row.option7 || "",
-                                option8: row.option8 || "",
-                                explanation: row.explanation || "",
-                                updatedAt: new Date().toISOString()
-                            };
-
-                            // 'questions' という新しい箱（コレクション）にデータを保存！
-                            // IDを文書のキーにすることで、何度アップしても安全に上書き（更新）されます
-                            await setDoc(doc(db, 'questions', questionData.id), questionData);
-                            successCount++;
-                        } catch (e) {
-                            console.error("データ登録エラー:", e, row);
-                            errorCount++;
-                        }
-                    }
-
-                    // ボタンを元に戻す
-                    btn.innerHTML = originalText;
-                    btn.disabled = false;
-                    fileInput.value = "";
-                    lucide.createIcons();
-                    
-                    showToast(`${successCount}件の問題を登録しました！✨` + (errorCount > 0 ? ` (失敗: ${errorCount}件)` : ""));
-                },
-                error: function(err) {
-                    console.error("CSV解析エラー:", err);
-                    showToast("CSVの読み込みに失敗しました😭");
-                    btn.innerHTML = originalText;
-                    btn.disabled = false;
-                    lucide.createIcons();
-                }
-            });
-        }
-
-        // ==================== UI描画処理 ====================
         function updateUI() {
-            // ★ スマホ向け横長ボタンレスポンシブ化
             const studentCategoriesGrid = document.getElementById("student-categories-grid");
             if (localCategories.length === 0) {
                 studentCategoriesGrid.innerHTML = `<p class="col-span-full text-center text-slate-400 font-bold py-4">カテゴリがありません</p>`;
@@ -825,7 +713,6 @@
                     const isActive = activeCategory === cat.id;
                     const borderClass = isActive ? cat.border : 'border-slate-100';
                     const shadowClass = isActive ? 'shadow-md -translate-y-1' : 'shadow-sm';
-                    
                     return `
                         <button onclick="selectCategory('${cat.id}')"
                             class="bg-white border-4 ${borderClass} p-3.5 md:p-4 rounded-3xl ${shadowClass} hover:shadow-md hover:-translate-y-1 active:scale-95 transition-all w-full flex items-center gap-3 relative overflow-hidden group text-left">
@@ -836,15 +723,11 @@
                                 <span class="text-[9px] md:text-[10px] font-extrabold block tracking-wider mb-0.5 truncate uppercase ${cat.text}">${cat.en}</span>
                                 <span class="font-extrabold text-slate-700 text-sm md:text-base block truncate">${cat.ja}</span>
                             </div>
-                            <div class="flex-shrink-0 text-slate-300 ${isActive ? cat.text : 'group-hover:text-slate-400'} transition-colors pr-1">
-                                <i data-lucide="${isActive ? 'check-circle-2' : 'chevron-right'}" class="w-5 h-5"></i>
-                            </div>
                         </button>
                     `;
                 }).join("");
             }
 
-            // 生徒用カテゴリ詳細
             const currentCatMeta = localCategories.find(c => c.id === activeCategory);
             if (currentCatMeta) {
                 document.getElementById("selected-cat-ja").textContent = currentCatMeta.ja;
@@ -853,46 +736,7 @@
                 document.getElementById("selected-cat-icon").setAttribute("data-lucide", currentCatMeta.icon);
             }
 
-            // 生徒側課題リスト
-            const studentGrid = document.getElementById("student-links-grid");
-            const studentEmpty = document.getElementById("student-empty-state");
-            const filteredStudentLinks = localLinks.filter(link => link.category === activeCategory).sort((a, b) => (a.order || 0) - (b.order || 0));
-                
-            document.getElementById("links-count-badge").textContent = `クエスト: ${filteredStudentLinks.length}個`;
-
-            if (filteredStudentLinks.length === 0) {
-                studentGrid.innerHTML = "";
-                studentEmpty.classList.remove("hidden");
-            } else {
-                studentEmpty.classList.add("hidden");
-                studentGrid.innerHTML = filteredStudentLinks.map(link => {
-                    const meta = localCategories.find(c => c.id === link.category) || { text: "text-amber-500" };
-                    return `
-                        <a href="${link.url}" target="_blank" rel="noopener noreferrer"
-                           class="flex items-center justify-between bg-white border-3 border-slate-100 hover:border-amber-400 p-4 rounded-3xl hover:shadow-xl hover:shadow-amber-100/30 hover:-translate-y-1 active:scale-[0.98] transition-all group w-full min-w-0">
-                            <div class="flex items-center gap-3.5 min-w-0 flex-grow">
-                                <div class="bg-amber-50 text-amber-500 p-3 rounded-2xl group-hover:bg-amber-400 group-hover:text-white transition-colors flex-shrink-0 flex items-center justify-center">
-                                    <i data-lucide="play" class="w-4 h-4 fill-current"></i>
-                                </div>
-                                <div class="min-w-0 flex-grow pr-1">
-                                    <p class="font-extrabold text-slate-800 text-sm md:text-base group-hover:text-amber-500 transition-colors leading-snug truncate">${link.title}</p>
-                                    <p class="text-[10px] text-slate-400 font-bold truncate mt-0.5">タップして開く</p>
-                                </div>
-                            </div>
-                            <div class="bg-slate-50 text-slate-400 p-2 rounded-xl group-hover:bg-amber-50 group-hover:text-amber-500 transition-all flex-shrink-0">
-                                <i data-lucide="external-link" class="w-4 h-4"></i>
-                            </div>
-                        </a>
-                    `;
-                }).join("");
-            }
-
-            // =============== 管理画面用 ===============
             if (isAdmin) {
-                // セレクトボックス更新
-                document.getElementById("form-category").innerHTML = localCategories.map(cat => `<option value="${cat.id}">${cat.ja}</option>`).join("");
-
-                // カテゴリ一覧・並べ替え
                 document.getElementById("admin-categories-list").innerHTML = localCategories.map((cat, index) => {
                     const isFirst = index === 0;
                     const isLast = index === localCategories.length - 1;
@@ -902,7 +746,6 @@
                                 <div class="p-2 rounded-xl text-white flex-shrink-0 ${cat.bg}"><i data-lucide="${cat.icon}" class="w-4 h-4"></i></div>
                                 <div class="min-w-0">
                                     <p class="font-extrabold text-xs text-slate-800 truncate">${cat.ja}</p>
-                                    <p class="text-[9px] font-bold text-slate-400 truncate">${cat.id}</p>
                                 </div>
                             </div>
                             <div class="flex flex-shrink-0">
@@ -913,63 +756,10 @@
                         </div>
                     `;
                 }).join("");
-
-                // フィルターボタン
-                const allBtnClass = adminFilter === 'all' ? 'bg-blue-500 text-white' : 'bg-slate-100 text-slate-600';
-                let filterHtml = `<button onclick="filterAdminLinks('all')" class="font-extrabold px-3 py-1.5 rounded-xl text-xs ${allBtnClass}">すべて</button>`;
-                filterHtml += localCategories.map(cat => {
-                    const btnClass = adminFilter === cat.id ? `${cat.bg} text-white` : 'bg-slate-100 text-slate-500';
-                    return `<button onclick="filterAdminLinks('${cat.id}')" class="font-bold px-3 py-1.5 rounded-xl text-xs ${btnClass}">${cat.ja}</button>`;
-                }).join("");
-                document.getElementById("admin-filter-bar").innerHTML = filterHtml;
-
-                // 課題リスト更新
-                const filteredAdminLinks = adminFilter === 'all' 
-                    ? [...localLinks].sort((a, b) => a.category !== b.category ? a.category.localeCompare(b.category) : (a.order || 0) - (b.order || 0))
-                    : localLinks.filter(l => l.category === adminFilter).sort((a, b) => (a.order || 0) - (b.order || 0));
-
-                document.getElementById("total-badge").textContent = `合計 ${localLinks.length}個`;
-                
-                const adminList = document.getElementById("admin-links-list");
-                const adminEmpty = document.getElementById("admin-empty-state");
-                
-                if (filteredAdminLinks.length === 0) {
-                    adminList.innerHTML = "";
-                    adminEmpty.classList.remove("hidden");
-                } else {
-                    adminEmpty.classList.add("hidden");
-                    const isSorting = adminFilter !== 'all';
-                    document.getElementById("reorder-tip").className = isSorting ? "mb-4 p-3 bg-emerald-50 text-emerald-800 border-2 border-emerald-200 rounded-2xl text-xs font-bold flex gap-2" : "mb-4 p-3 bg-yellow-50 text-amber-800 border-2 border-yellow-200 rounded-2xl text-xs font-bold flex gap-2";
-                    
-                    adminList.innerHTML = filteredAdminLinks.map((link, index) => {
-                        const meta = localCategories.find(c => c.id === link.category) || { ja: "未分類", bg: "bg-slate-400" };
-                        let reorderHtml = '';
-                        if (isSorting) {
-                            reorderHtml = `
-                                <div class="flex items-center border-r border-slate-200 pr-1 mr-1">
-                                    <button onclick="moveLinkOrder('${link.id}', 'up')" ${index === 0 ? 'disabled' : ''} class="p-1 text-slate-400 hover:text-amber-500 disabled:opacity-20"><i data-lucide="arrow-up" class="w-4 h-4"></i></button>
-                                    <button onclick="moveLinkOrder('${link.id}', 'down')" ${index === filteredAdminLinks.length - 1 ? 'disabled' : ''} class="p-1 text-slate-400 hover:text-amber-500 disabled:opacity-20"><i data-lucide="arrow-down" class="w-4 h-4"></i></button>
-                                </div>
-                            `;
-                        }
-                        return `
-                            <div class="px-4 py-3 text-sm grid grid-cols-12 gap-2 items-center hover:bg-amber-50/30 min-w-[500px]">
-                                <div class="col-span-3"><span class="px-2 py-1 text-[10px] font-extrabold rounded-md ${meta.bg} text-white">${meta.ja}</span></div>
-                                <div class="col-span-6 font-extrabold text-slate-700 truncate pr-2">${link.title}</div>
-                                <div class="col-span-3 flex justify-end items-center">
-                                    ${reorderHtml}
-                                    <a href="${link.url}" target="_blank" class="p-1.5 text-slate-400 hover:text-blue-500"><i data-lucide="external-link" class="w-4 h-4"></i></a>
-                                    <button onclick="deleteLink('${link.id}')" class="p-1.5 text-slate-400 hover:text-rose-500"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-                                </div>
-                            </div>
-                        `;
-                    }).join("");
-                }
             }
             lucide.createIcons();
         }
 
-        // トースト通知
         function showToast(message) {
             const toast = document.createElement("div");
             toast.className = "fixed bottom-5 right-5 z-50 bg-slate-800 text-white px-5 py-3 rounded-2xl shadow-xl flex items-center gap-2 animate-float text-sm font-bold";
@@ -978,7 +768,7 @@
             setTimeout(() => {
                 toast.classList.add("opacity-0", "transition-opacity", "duration-500");
                 setTimeout(() => toast.remove(), 500);
-            }, 2500);
+            }, 3000);
         }
     </script>
 </body>
