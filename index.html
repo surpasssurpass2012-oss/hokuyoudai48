@@ -306,7 +306,6 @@
 
         function shuffleArray(array) { for (let i = array.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [array[i], array[j]] = [array[j], array[i]]; } return array; }
 
-        // ★ 詳細記録時に question (問題文) も保存するように改修
         window.startQuiz = function(subCategoryName) {
             const questionsForQuest = localQuestions.filter(q => q.sub_category === subCategoryName);
             if(questionsForQuest.length === 0) return;
@@ -355,7 +354,6 @@
 
         window.checkSortAnswer = function() {
             const q = quizState.questions[quizState.currentIndex]; const userAnswer = currentSortAnswer.join(" ").replace(/\s+/g, ' ').trim(); const correctAnswer = (q.answer1 || "").replace(/\s+/g, ' ').trim(); const isCorrect = (userAnswer === correctAnswer);
-            // ★ q.question も記録に含める
             quizState.details.push({ id: q.id, question: q.question, sentence: q.sentence, isCorrect: isCorrect, userAnswer: userAnswer, correctAnswer: correctAnswer });
             document.getElementById("sort-choices-area").innerHTML = ""; document.getElementById("sort-check-btn").classList.add("hidden"); document.getElementById("sort-check-btn").classList.remove("flex");
             const dropArea = document.getElementById("sort-drop-area"); const btns = dropArea.querySelectorAll("button");
@@ -366,7 +364,6 @@
 
         window.answerQuiz = function(selectedOption) {
             const q = quizState.questions[quizState.currentIndex]; const isCorrect = (selectedOption === q.answer1);
-            // ★ q.question も記録に含める
             quizState.details.push({ id: q.id, question: q.question, sentence: q.sentence, isCorrect: isCorrect, userAnswer: selectedOption, correctAnswer: q.answer1 });
             const buttons = document.querySelectorAll(".quiz-option-btn");
             buttons.forEach(btn => {
@@ -476,7 +473,7 @@
             } lucide.createIcons();
         }
 
-        // ★ 間違えた問題の表示を大幅アップデート ★
+        // ★ 大幅アップデート：すべての問題（正解・不正解）を表示するように変更
         function updateAdminHistoryUI() {
             if(!isAdmin) return;
             const container = document.getElementById("admin-students-accordion");
@@ -517,35 +514,28 @@
                 s.quests.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
                 const historyHTML = s.quests.map(hq => {
                     const qDate = new Date(hq.timestamp).toLocaleDateString('ja-JP', {month:'short', day:'numeric'});
-                    let wrongsHTML = '';
+                    let detailsHTML = '';
                     if(hq.details && hq.details.length > 0) {
-                        const wrongs = hq.details.filter(d => !d.isCorrect);
-                        if(wrongs.length > 0) {
-                            wrongsHTML = `<div class="mt-2 pl-3 border-l-2 border-rose-200 space-y-3">` + wrongs.map(w => {
-                                // ★ 過去の履歴で question が保存されていなくても、IDから検索して補完する神機能
-                                const qInfo = localQuestions.find(lq => String(lq.id) === String(w.id)) || {};
-                                const qText = w.question || qInfo.question || "問題文なし";
-                                const sText = w.sentence || qInfo.sentence || "";
-                                const sHtml = sText ? `<span class="block text-slate-800 font-extrabold mt-0.5">${sText}</span>` : "";
-                                
-                                return `
-                                <div class="text-[11px] text-slate-500">
-                                    <span class="text-rose-500 font-bold">❌ ID: ${w.id}</span>
-                                    <span class="block text-slate-600 font-bold mt-0.5">${qText}</span>
-                                    ${sHtml}
-                                    <div class="mt-1 bg-white border border-rose-100 rounded p-1.5 inline-block">
-                                        選んだ答え: <span class="text-rose-600 font-bold">${w.userAnswer}</span> 
-                                        <span class="text-slate-300 mx-1">|</span> 
-                                        正解: <span class="text-emerald-600 font-bold">${w.correctAnswer}</span>
-                                    </div>
-                                </div>`;
-                            }).join("") + `</div>`;
-                        } else { wrongsHTML = `<p class="text-[10px] text-emerald-500 mt-1 font-bold">✨ 全問正解でした！</p>`; }
+                        detailsHTML = `<div class="mt-2 pl-3 border-l-2 border-slate-200 space-y-3">` + hq.details.map(w => {
+                            const qInfo = localQuestions.find(lq => String(lq.id) === String(w.id)) || {};
+                            const qText = w.question || qInfo.question || "問題文なし";
+                            const sText = w.sentence || qInfo.sentence || "";
+                            const sHtml = sText ? `<span class="block text-slate-800 font-extrabold mt-0.5">${sText}</span>` : "";
+                            
+                            // 正解した問題の表示
+                            if (w.isCorrect) {
+                                return `<div class="text-[11px] text-slate-500"><span class="text-emerald-500 font-bold">⭕️ ID: ${w.id}</span><span class="block text-slate-600 font-bold mt-0.5">${qText}</span>${sHtml}<div class="mt-1 bg-white border border-emerald-100 rounded p-1.5 inline-block">正解: <span class="text-emerald-600 font-bold">${w.correctAnswer}</span></div></div>`;
+                            } 
+                            // 不正解の問題の表示
+                            else {
+                                return `<div class="text-[11px] text-slate-500"><span class="text-rose-500 font-bold">❌ ID: ${w.id}</span><span class="block text-slate-600 font-bold mt-0.5">${qText}</span>${sHtml}<div class="mt-1 bg-white border border-rose-100 rounded p-1.5 inline-block">選んだ答え: <span class="text-rose-600 font-bold">${w.userAnswer}</span> <span class="text-slate-300 mx-1">|</span> 正解: <span class="text-emerald-600 font-bold">${w.correctAnswer}</span></div></div>`;
+                            }
+                        }).join("") + `</div>`;
                     }
-                    return `<div class="bg-slate-50 p-3 rounded-xl mb-2"><div class="flex justify-between items-center mb-1"><span class="font-extrabold text-sm text-slate-700">${hq.quest}</span><span class="text-xs font-bold text-slate-400">${qDate}</span></div><p class="text-xs font-bold text-slate-500">スコア: ${hq.score}/${hq.total} (${hq.percentage}%)</p>${wrongsHTML}</div>`;
+                    return `<div class="bg-slate-50 p-3 rounded-xl mb-2"><div class="flex justify-between items-center mb-1"><span class="font-extrabold text-sm text-slate-700">${hq.quest}</span><span class="text-xs font-bold text-slate-400">${qDate}</span></div><p class="text-xs font-bold text-slate-500">スコア: ${hq.score}/${hq.total} (${hq.percentage}%)</p>${detailsHTML}</div>`;
                 }).join("");
 
-                return `<details class="group bg-white border-2 border-slate-100 rounded-2xl overflow-hidden [&_summary::-webkit-details-marker]:hidden shadow-sm"><summary class="flex flex-wrap sm:flex-nowrap justify-between items-center font-extrabold cursor-pointer list-none p-4 hover:bg-slate-50 transition-colors gap-3"><div class="flex items-center gap-3 w-full sm:w-auto"><div class="bg-sky-100 text-sky-600 w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 text-sm"><i data-lucide="user"></i></div><div><p class="text-[10px] text-slate-400 mb-0.5 leading-none">学籍番号</p><p class="text-lg text-slate-800 leading-none">${s.id}</p></div></div><div class="flex items-center gap-4 sm:gap-6 w-full sm:w-auto justify-between sm:justify-end"><div class="text-center"><p class="text-[10px] text-slate-400">問題数</p><p class="text-sm text-slate-700">${s.totalQs}</p></div><div class="text-center"><p class="text-[10px] text-slate-400">正答率</p><p class="text-sm text-emerald-600">${avg}%</p></div><div class="text-center hidden sm:block"><p class="text-[10px] text-slate-400">最終学習</p><p class="text-xs text-slate-500">${dateStr}</p></div><span class="transition-transform duration-300 group-open:-rotate-180 text-slate-400"><i data-lucide="chevron-down" class="w-5 h-5"></i></span></div></summary><div class="p-4 pt-0 border-t-2 border-dashed border-slate-100 bg-white flex flex-col max-h-[400px] overflow-y-auto custom-scrollbar"><h4 class="text-xs font-extrabold text-slate-400 mb-3 mt-3 flex items-center gap-1"><i data-lucide="clock" class="w-3 h-3"></i> 学習のきろくと間違えた問題</h4>${historyHTML}</div></details>`;
+                return `<details class="group bg-white border-2 border-slate-100 rounded-2xl overflow-hidden [&_summary::-webkit-details-marker]:hidden shadow-sm"><summary class="flex flex-wrap sm:flex-nowrap justify-between items-center font-extrabold cursor-pointer list-none p-4 hover:bg-slate-50 transition-colors gap-3"><div class="flex items-center gap-3 w-full sm:w-auto"><div class="bg-sky-100 text-sky-600 w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 text-sm"><i data-lucide="user"></i></div><div><p class="text-[10px] text-slate-400 mb-0.5 leading-none">学籍番号</p><p class="text-lg text-slate-800 leading-none">${s.id}</p></div></div><div class="flex items-center gap-4 sm:gap-6 w-full sm:w-auto justify-between sm:justify-end"><div class="text-center"><p class="text-[10px] text-slate-400">問題数</p><p class="text-sm text-slate-700">${s.totalQs}</p></div><div class="text-center"><p class="text-[10px] text-slate-400">正答率</p><p class="text-sm text-emerald-600">${avg}%</p></div><div class="text-center hidden sm:block"><p class="text-[10px] text-slate-400">最終学習</p><p class="text-xs text-slate-500">${dateStr}</p></div><span class="transition-transform duration-300 group-open:-rotate-180 text-slate-400"><i data-lucide="chevron-down" class="w-5 h-5"></i></span></div></summary><div class="p-4 pt-0 border-t-2 border-dashed border-slate-100 bg-white flex flex-col max-h-[400px] overflow-y-auto custom-scrollbar"><h4 class="text-xs font-extrabold text-slate-400 mb-3 mt-3 flex items-center gap-1"><i data-lucide="clock" class="w-3 h-3"></i> 学習のきろくと回答詳細</h4>${historyHTML}</div></details>`;
             }).join("");
             lucide.createIcons();
         }
