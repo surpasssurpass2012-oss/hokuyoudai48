@@ -97,7 +97,7 @@
                 <div class="text-center"><p class="text-xs text-slate-400 font-bold mb-1">⭐️ 全体の平均正答率</p><p class="text-2xl font-extrabold text-emerald-500"><span id="student-stat-avg">0</span><span class="text-sm ml-1 text-slate-500">%</span></p></div>
             </div>
 
-            <!-- ================= ★ デイリークエストバナー (新規追加) ★ ================= -->
+            <!-- デイリークエストバナー -->
             <div id="student-daily-quest-area" class="hidden bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-4xl shadow-md p-5 md:p-8 relative overflow-hidden flex-col sm:flex-row items-center justify-between gap-4 border-4 border-white/20">
                 <div class="absolute -top-10 -right-10 w-32 h-32 bg-white rounded-full opacity-10 blur-2xl pointer-events-none"></div>
                 <div class="relative z-10 flex items-center gap-4 text-white w-full sm:w-auto">
@@ -177,6 +177,7 @@
 
         <!-- ================= ★ タブ式管理者用画面 ★ ================= -->
         <section id="view-admin" class="hidden w-full max-w-5xl mx-auto">
+            <!-- 管理室ヘッダー -->
             <div class="bg-slate-800 text-white p-5 md:p-6 rounded-4xl shadow-md flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative overflow-hidden mb-6">
                 <div class="flex items-center gap-3.5 relative z-10 min-w-0">
                     <div class="bg-amber-400 text-slate-900 p-2.5 rounded-2xl shadow-md rotate-[-3deg] flex-shrink-0"><i data-lucide="sliders" class="w-6 h-6"></i></div>
@@ -184,6 +185,7 @@
                 </div>
             </div>
 
+            <!-- ★ タブメニュー ★ -->
             <div class="flex space-x-2 border-b-4 border-slate-200 pb-0 mb-6 overflow-x-auto custom-scrollbar pt-2 px-1">
                 <button onclick="switchAdminTab('history')" id="tab-btn-history" class="px-5 py-3.5 rounded-t-2xl font-extrabold text-sm whitespace-nowrap transition-all bg-sky-100 text-sky-700 hover:bg-sky-200">
                     <i data-lucide="users" class="inline w-4 h-4 mb-0.5 mr-1"></i> クラス成績表
@@ -196,7 +198,7 @@
                 </button>
             </div>
 
-            <!-- タブ1：クラス成績表 -->
+            <!-- ================= タブ1：クラス成績表 ================= -->
             <div id="tab-content-history" class="bg-white rounded-4xl shadow-sm border-4 border-slate-100 p-5 md:p-8 space-y-4">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b-2 border-slate-100 pb-3 mb-4">
                     <h3 class="text-base md:text-lg font-extrabold text-slate-800 flex items-center gap-2">
@@ -213,7 +215,7 @@
                 <div id="admin-students-accordion" class="space-y-3 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar"></div>
             </div>
 
-            <!-- タブ2：問題分析 -->
+            <!-- ================= タブ2：問題分析 ================= -->
             <div id="tab-content-questions" class="hidden bg-white rounded-4xl shadow-sm border-4 border-slate-100 p-5 md:p-8 space-y-4">
                 <h3 class="text-base md:text-lg font-extrabold text-slate-800 flex items-center gap-2 border-b-2 border-slate-100 pb-3 mb-4">
                     <i data-lucide="pie-chart" class="text-emerald-500 w-5 h-5"></i><span>収録問題と正答率分析 (クエスト別)</span>
@@ -222,8 +224,9 @@
                 <div id="admin-questions-preview" class="space-y-3 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar"></div>
             </div>
 
-            <!-- タブ3：設定・データ -->
+            <!-- ================= タブ3：設定・データ ================= -->
             <div id="tab-content-settings" class="hidden grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
+                <!-- 左カラム -->
                 <div class="space-y-6">
                     <div class="bg-white rounded-4xl shadow-sm border-4 border-emerald-200 p-5 md:p-6">
                         <h3 class="text-base font-extrabold text-slate-800 mb-4 flex items-center gap-2 border-b-2 border-slate-100 pb-3"><i data-lucide="database" class="text-emerald-500 w-5 h-5"></i><span>問題データ (CSV) 管理</span></h3>
@@ -236,9 +239,26 @@
                     </div>
                     <div class="bg-white rounded-4xl shadow-sm border-4 border-rose-100 p-5 md:p-6"><h3 class="text-base font-extrabold text-slate-800 mb-4 flex items-center gap-2 border-b-2 border-slate-100 pb-3"><i data-lucide="key" class="text-rose-500 w-5 h-5"></i><span>生徒用「合言葉」の変更</span></h3><form onsubmit="handleUpdatePasscode(event)" class="space-y-3"><div><input type="text" id="admin-passcode" required placeholder="読み込み中..." class="w-full px-4 py-2.5 rounded-2xl border-3 border-slate-100 focus:outline-none focus:ring-4 focus:ring-rose-100 focus:border-rose-400 text-sm text-slate-700 font-bold bg-slate-50"></div><button type="submit" class="w-full bg-rose-500 hover:bg-rose-600 text-white font-extrabold py-3 px-4 rounded-2xl shadow-md active:scale-[0.97] transition-all flex items-center justify-center gap-1.5 text-xs"><i data-lucide="save" class="w-4 h-4"></i><span>この合言葉に変更する</span></button></form></div>
                 </div>
+
+                <!-- 右カラム -->
                 <div class="space-y-6">
-                    <div class="bg-white rounded-4xl shadow-sm border-4 border-amber-200 p-5 md:p-6"><h3 class="text-base font-extrabold text-slate-800 mb-4 flex items-center gap-2 border-b-2 border-slate-100 pb-3"><i data-lucide="folder-plus" class="text-amber-500 w-5 h-5"></i><span>新しいカテゴリを増やす</span></h3><form onsubmit="handleCreateCategory(event)" class="space-y-3.5"><div><label class="block text-xs font-extrabold text-slate-600 mb-1">カテゴリ名 (日本語)</label><input type="text" id="cat-ja" required placeholder="例: 語法・文法" class="w-full px-4 py-2.5 rounded-2xl border-3 border-slate-100 focus:outline-none focus:ring-4 focus:ring-amber-100 focus:border-amber-400 text-xs text-slate-700 font-bold bg-slate-50"></div><div><label class="block text-xs font-extrabold text-slate-600 mb-1">英語表記 (大文字)</label><input type="text" id="cat-en" required placeholder="例: GRAMMAR" class="w-full px-4 py-2.5 rounded-2xl border-3 border-slate-100 focus:outline-none focus:ring-4 focus:ring-amber-100 focus:border-amber-400 text-xs text-slate-700 font-bold bg-slate-50"></div><div class="grid grid-cols-2 gap-2"><div><label class="block text-xs font-extrabold text-slate-600 mb-1">色</label><select id="cat-color" required class="w-full px-3 py-2.5 rounded-2xl border-3 border-slate-100 focus:outline-none focus:ring-4 focus:ring-amber-100 focus:border-amber-400 text-xs text-slate-700 font-bold bg-slate-50"><option value="orange">オレンジ</option><option value="teal">ミント</option><option value="sky">スカイ</option><option value="purple">パープル</option><option value="pink">ピンク</option></select></div><div><label class="block text-xs font-extrabold text-slate-600 mb-1">アイコン</label><select id="cat-icon" required class="w-full px-3 py-2.5 rounded-2xl border-3 border-slate-100 focus:outline-none focus:ring-4 focus:ring-amber-100 focus:border-amber-400 text-xs text-slate-700 font-bold bg-slate-50"><option value="calendar">カレンダー</option><option value="list-checks">チェック</option><option value="book-open">本</option><option value="headphones">ヘッドホン</option><option value="pencil">ペン</option></select></div></div><button type="submit" class="w-full bg-amber-400 hover:bg-amber-500 text-slate-900 font-extrabold py-3 px-4 rounded-2xl shadow-md active:scale-[0.97] transition-all flex items-center justify-center gap-1.5 text-xs mt-3"><i data-lucide="plus" class="w-4 h-4"></i><span>カテゴリを作成</span></button></form></div>
-                    <div class="bg-white rounded-4xl shadow-sm border-4 border-slate-100 p-5 md:p-6"><h3 class="text-base font-extrabold text-slate-800 flex items-center gap-2 border-b-2 border-slate-100 pb-3 mb-4"><i data-lucide="folder" class="text-amber-500 w-5 h-5"></i><span>カテゴリの管理・並べ替え・削除</span></h3><div id="admin-categories-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3"></div></div>
+                    <div class="bg-white rounded-4xl shadow-sm border-4 border-amber-200 p-5 md:p-6">
+                        <h3 class="text-base font-extrabold text-slate-800 mb-4 flex items-center gap-2 border-b-2 border-slate-100 pb-3"><i data-lucide="folder-plus" class="text-amber-500 w-5 h-5"></i><span>新しいカテゴリを増やす</span></h3>
+                        <form onsubmit="handleCreateCategory(event)" class="space-y-3.5">
+                            <div><label class="block text-xs font-extrabold text-slate-600 mb-1">カテゴリ名 (日本語)</label><input type="text" id="cat-ja" required placeholder="例: 語法・文法" class="w-full px-4 py-2.5 rounded-2xl border-3 border-slate-100 focus:outline-none focus:ring-4 focus:ring-amber-100 focus:border-amber-400 text-xs text-slate-700 font-bold bg-slate-50"></div>
+                            <div><label class="block text-xs font-extrabold text-slate-600 mb-1">英語表記 (大文字)</label><input type="text" id="cat-en" required placeholder="例: GRAMMAR" class="w-full px-4 py-2.5 rounded-2xl border-3 border-slate-100 focus:outline-none focus:ring-4 focus:ring-amber-100 focus:border-amber-400 text-xs text-slate-700 font-bold bg-slate-50"></div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div><label class="block text-xs font-extrabold text-slate-600 mb-1">色</label><select id="cat-color" required class="w-full px-3 py-2.5 rounded-2xl border-3 border-slate-100 focus:outline-none focus:ring-4 focus:ring-amber-100 focus:border-amber-400 text-xs text-slate-700 font-bold bg-slate-50"><option value="orange">オレンジ</option><option value="teal">ミント</option><option value="sky">スカイ</option><option value="purple">パープル</option><option value="pink">ピンク</option></select></div>
+                                <div><label class="block text-xs font-extrabold text-slate-600 mb-1">アイコン</label><select id="cat-icon" required class="w-full px-3 py-2.5 rounded-2xl border-3 border-slate-100 focus:outline-none focus:ring-4 focus:ring-amber-100 focus:border-amber-400 text-xs text-slate-700 font-bold bg-slate-50"><option value="calendar">カレンダー</option><option value="list-checks">チェック</option><option value="book-open">本</option><option value="headphones">ヘッドホン</option><option value="pencil">ペン</option></select></div>
+                            </div>
+                            <button type="submit" class="w-full bg-amber-400 hover:bg-amber-500 text-slate-900 font-extrabold py-3 px-4 rounded-2xl shadow-md active:scale-[0.97] transition-all flex items-center justify-center gap-1.5 text-xs mt-3"><i data-lucide="plus" class="w-4 h-4"></i><span>カテゴリを作成</span></button>
+                        </form>
+                    </div>
+                    
+                    <div class="bg-white rounded-4xl shadow-sm border-4 border-slate-100 p-5 md:p-6">
+                        <h3 class="text-base font-extrabold text-slate-800 flex items-center gap-2 border-b-2 border-slate-100 pb-3 mb-4"><i data-lucide="folder" class="text-amber-500 w-5 h-5"></i><span>カテゴリの管理・並べ替え・削除</span></h3>
+                        <div id="admin-categories-list" class="grid grid-cols-1 gap-3"></div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -301,9 +321,57 @@
 
         window.handleUpdatePasscode = async function(e) { e.preventDefault(); const newPass = document.getElementById("admin-passcode").value.trim(); if (!newPass) return; try { await setDoc(doc(db, 'settings', 'passcode'), { value: newPass }); systemPasscode = newPass; showToast("更新しました"); } catch (error) { showToast("失敗しました"); } }
 
+        // ================= ★ 新規：カテゴリ管理用JS関数 ★ =================
+        window.handleCreateCategory = async function(e) {
+            e.preventDefault();
+            const ja = document.getElementById("cat-ja").value.trim();
+            const en = document.getElementById("cat-en").value.trim().toUpperCase();
+            const color = document.getElementById("cat-color").value;
+            const icon = document.getElementById("cat-icon").value;
+            if(!ja || !en) return;
+            const colorMap = {
+                'orange': { bg: 'bg-orange-400', text: 'text-orange-400', border: 'border-orange-100' },
+                'teal': { bg: 'bg-teal-400', text: 'text-teal-400', border: 'border-teal-100' },
+                'sky': { bg: 'bg-sky-400', text: 'text-sky-400', border: 'border-sky-100' },
+                'purple': { bg: 'bg-purple-400', text: 'text-purple-400', border: 'border-purple-100' },
+                'pink': { bg: 'bg-pink-400', text: 'text-pink-400', border: 'border-pink-100' }
+            };
+            const c = colorMap[color] || colorMap['orange'];
+            const order = localCategories.length > 0 ? Math.max(...localCategories.map(cat => cat.order || 0)) + 1 : 0;
+            try {
+                await addDoc(collection(db, 'categories'), { ja, en, icon, bg: c.bg, text: c.text, border: c.border, order });
+                showToast("カテゴリを作成しました！");
+                e.target.reset();
+            } catch (error) { console.error(error); showToast("作成に失敗しました"); }
+        }
+
+        window.deleteCategory = async function(docId, catName) {
+            if(!confirm(`カテゴリ「${catName}」を本当に削除しますか？\n※カテゴリを消しても、中の問題データは消えません。`)) return;
+            try {
+                await deleteDoc(doc(db, 'categories', docId));
+                showToast("カテゴリを削除しました🗑️");
+                if(activeCategory === docId) activeCategory = null;
+            } catch(e) { showToast("削除失敗"); }
+        }
+
+        window.moveCategory = async function(index, direction) {
+            if(direction === -1 && index === 0) return;
+            if(direction === 1 && index === localCategories.length - 1) return;
+            const cat1 = localCategories[index];
+            const cat2 = localCategories[index + direction];
+            const order1 = cat1.order !== undefined ? cat1.order : index;
+            const order2 = cat2.order !== undefined ? cat2.order : index + direction;
+            try {
+                const batch = writeBatch(db);
+                batch.update(doc(db, 'categories', cat1.docId), { order: order2 });
+                batch.update(doc(db, 'categories', cat2.docId), { order: order1 });
+                await batch.commit();
+            } catch(e) { showToast("並べ替え失敗"); }
+        }
+        // ================================================================
+
         function shuffleArray(array) { for (let i = array.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [array[i], array[j]] = [array[j], array[i]]; } return array; }
 
-        // ★ 新規追加：クイズUIの初期化を共通関数化
         function initQuizUI() {
             document.getElementById("view-student").classList.add("hidden"); document.getElementById("view-quiz").classList.remove("hidden"); document.getElementById("quiz-total-num").textContent = quizState.questions.length; document.getElementById("quiz-current-num").textContent = "1";
             const contentArea = document.getElementById("quiz-content"); const countdownArea = document.getElementById("quiz-countdown-area"); const countdownText = document.getElementById("countdown-text");
@@ -318,11 +386,10 @@
             }, 1000);
         }
 
-        // ★ 新規追加：デイリークエストを開始する関数
         window.startDailyQuest = function() {
             if(localQuestions.length === 0) { showToast("まだ問題が登録されていません"); return; }
             let shuffled = shuffleArray([...localQuestions]);
-            let selected = shuffled.slice(0, 10); // ランダムに最大10問抽出
+            let selected = shuffled.slice(0, 10); 
             quizState = { questions: selected, currentIndex: 0, score: 0, details: [], questName: "🎯 今日のランダム10問" };
             initQuizUI();
         }
@@ -429,8 +496,22 @@
 
         function updateUI() {
             if(isAdmin) { 
+                // ★ 改修箇所：カテゴリリストに移動・削除ボタンを追加
                 document.getElementById("admin-categories-list").innerHTML = localCategories.map((cat, index) => { 
-                    return `<div class="flex items-center justify-between p-3 rounded-2xl border-2 border-slate-100 bg-slate-50/50 hover:bg-white transition-all"><div class="flex items-center gap-2 min-w-0"><div class="p-2 rounded-xl text-white flex-shrink-0 ${cat.bg}"><i data-lucide="${cat.icon}" class="w-4 h-4"></i></div><div class="min-w-0"><p class="font-extrabold text-xs text-slate-800 truncate">${cat.ja}</p></div></div></div>`; 
+                    const isFirst = index === 0;
+                    const isLast = index === localCategories.length - 1;
+                    return `
+                    <div class="flex items-center justify-between p-3 rounded-2xl border-2 border-slate-100 bg-slate-50/50 hover:bg-white transition-all">
+                        <div class="flex items-center gap-2 min-w-0">
+                            <div class="p-2 rounded-xl text-white flex-shrink-0 ${cat.bg}"><i data-lucide="${cat.icon}" class="w-4 h-4"></i></div>
+                            <div class="min-w-0"><p class="font-extrabold text-xs text-slate-800 truncate">${cat.ja}</p></div>
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <button onclick="moveCategory(${index}, -1)" class="p-1.5 text-slate-400 hover:text-sky-500 hover:bg-sky-50 rounded-lg transition-colors disabled:opacity-30" ${isFirst ? 'disabled' : ''}><i data-lucide="chevron-up" class="w-4 h-4"></i></button>
+                            <button onclick="moveCategory(${index}, 1)" class="p-1.5 text-slate-400 hover:text-sky-500 hover:bg-sky-50 rounded-lg transition-colors disabled:opacity-30" ${isLast ? 'disabled' : ''}><i data-lucide="chevron-down" class="w-4 h-4"></i></button>
+                            <button onclick="deleteCategory('${cat.docId}', '${cat.ja.replace(/'/g, "\\'")}')" class="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-colors ml-1"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                        </div>
+                    </div>`; 
                 }).join(""); 
                 
                 const qStats = {};
