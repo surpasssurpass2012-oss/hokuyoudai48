@@ -88,13 +88,29 @@
         </section>
 
         <!-- ================= 生徒用ホーム画面 ================= -->
-        <section id="view-student" class="hidden space-y-5 md:space-y-8 w-full max-w-5xl mx-auto">
+        <section id="view-student" class="hidden space-y-5 md:space-y-6 w-full max-w-5xl mx-auto">
             <div class="bg-white p-4 md:p-8 rounded-4xl shadow-sm border-4 border-yellow-100/70 flex flex-col md:flex-row md:items-center justify-between gap-4 relative overflow-hidden"><div class="flex items-center gap-3 md:gap-5 relative z-10 min-w-0"><span class="text-4xl md:text-5xl animate-float flex-shrink-0">🦉</span><div class="min-w-0"><p class="text-sm md:text-base text-slate-500 mt-1 font-bold leading-snug">ルディ先生と一緒に、今日も楽しくミッションをクリアしよう！✨</p></div></div></div>
             
             <div id="student-stats-area" class="hidden bg-white p-4 rounded-3xl shadow-sm border-2 border-slate-100 flex justify-around items-center">
                 <div class="text-center"><p class="text-xs text-slate-400 font-bold mb-1">🔥 これまで解いた問題</p><p class="text-2xl font-extrabold text-sky-500"><span id="student-stat-total">0</span><span class="text-sm ml-1 text-slate-500">問</span></p></div>
                 <div class="h-10 w-0.5 bg-slate-100"></div>
                 <div class="text-center"><p class="text-xs text-slate-400 font-bold mb-1">⭐️ 全体の平均正答率</p><p class="text-2xl font-extrabold text-emerald-500"><span id="student-stat-avg">0</span><span class="text-sm ml-1 text-slate-500">%</span></p></div>
+            </div>
+
+            <!-- ================= ★ デイリークエストバナー (新規追加) ★ ================= -->
+            <div id="student-daily-quest-area" class="hidden bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-4xl shadow-md p-5 md:p-8 relative overflow-hidden flex-col sm:flex-row items-center justify-between gap-4 border-4 border-white/20">
+                <div class="absolute -top-10 -right-10 w-32 h-32 bg-white rounded-full opacity-10 blur-2xl pointer-events-none"></div>
+                <div class="relative z-10 flex items-center gap-4 text-white w-full sm:w-auto">
+                    <span class="text-4xl md:text-5xl animate-float drop-shadow-md">🎁</span>
+                    <div>
+                        <p class="text-[10px] md:text-xs font-extrabold text-white/80 tracking-wider mb-0.5">TODAY'S QUEST</p>
+                        <h3 class="text-xl md:text-2xl font-extrabold">今日のランダム10問</h3>
+                        <p class="text-[10px] md:text-xs font-bold text-white/90 mt-1">全問題からランダムで出題！毎日の腕試しに！</p>
+                    </div>
+                </div>
+                <button onclick="startDailyQuest()" class="relative z-10 w-full sm:w-auto bg-white text-purple-600 hover:bg-slate-50 font-extrabold py-3.5 px-6 rounded-2xl shadow-lg active:scale-95 transition-all flex items-center justify-center gap-2 text-sm md:text-base flex-shrink-0 mt-2 sm:mt-0">
+                    <i data-lucide="swords" class="w-5 h-5"></i><span>挑戦する！</span>
+                </button>
             </div>
 
             <div id="student-categories-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4"></div>
@@ -161,7 +177,6 @@
 
         <!-- ================= ★ タブ式管理者用画面 ★ ================= -->
         <section id="view-admin" class="hidden w-full max-w-5xl mx-auto">
-            <!-- 管理室ヘッダー -->
             <div class="bg-slate-800 text-white p-5 md:p-6 rounded-4xl shadow-md flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative overflow-hidden mb-6">
                 <div class="flex items-center gap-3.5 relative z-10 min-w-0">
                     <div class="bg-amber-400 text-slate-900 p-2.5 rounded-2xl shadow-md rotate-[-3deg] flex-shrink-0"><i data-lucide="sliders" class="w-6 h-6"></i></div>
@@ -169,7 +184,6 @@
                 </div>
             </div>
 
-            <!-- ★ タブメニュー ★ -->
             <div class="flex space-x-2 border-b-4 border-slate-200 pb-0 mb-6 overflow-x-auto custom-scrollbar pt-2 px-1">
                 <button onclick="switchAdminTab('history')" id="tab-btn-history" class="px-5 py-3.5 rounded-t-2xl font-extrabold text-sm whitespace-nowrap transition-all bg-sky-100 text-sky-700 hover:bg-sky-200">
                     <i data-lucide="users" class="inline w-4 h-4 mb-0.5 mr-1"></i> クラス成績表
@@ -182,7 +196,7 @@
                 </button>
             </div>
 
-            <!-- ================= タブ1：クラス成績表 ================= -->
+            <!-- タブ1：クラス成績表 -->
             <div id="tab-content-history" class="bg-white rounded-4xl shadow-sm border-4 border-slate-100 p-5 md:p-8 space-y-4">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b-2 border-slate-100 pb-3 mb-4">
                     <h3 class="text-base md:text-lg font-extrabold text-slate-800 flex items-center gap-2">
@@ -199,16 +213,16 @@
                 <div id="admin-students-accordion" class="space-y-3 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar"></div>
             </div>
 
-            <!-- ================= タブ2：問題分析 ================= -->
+            <!-- タブ2：問題分析 -->
             <div id="tab-content-questions" class="hidden bg-white rounded-4xl shadow-sm border-4 border-slate-100 p-5 md:p-8 space-y-4">
                 <h3 class="text-base md:text-lg font-extrabold text-slate-800 flex items-center gap-2 border-b-2 border-slate-100 pb-3 mb-4">
                     <i data-lucide="pie-chart" class="text-emerald-500 w-5 h-5"></i><span>収録問題と正答率分析 (クエスト別)</span>
                 </h3>
-                <p class="text-xs text-slate-400 font-bold mb-3">各クエストをクリックすると、中の問題ごとの「解かれた回数」と「正答率」が確認できます。</p>
+                <p class="text-xs text-slate-400 font-bold mb-3">各クエストをクリックすると、中の問題ごとの「解かれた回数」と「正答率」が確認できます。<br>※間違えて登録した問題は、右上のゴミ箱ボタンから直接削除できます。</p>
                 <div id="admin-questions-preview" class="space-y-3 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar"></div>
             </div>
 
-            <!-- ================= タブ3：設定・データ ================= -->
+            <!-- タブ3：設定・データ -->
             <div id="tab-content-settings" class="hidden grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
                 <div class="space-y-6">
                     <div class="bg-white rounded-4xl shadow-sm border-4 border-emerald-200 p-5 md:p-6">
@@ -222,10 +236,8 @@
                     </div>
                     <div class="bg-white rounded-4xl shadow-sm border-4 border-rose-100 p-5 md:p-6"><h3 class="text-base font-extrabold text-slate-800 mb-4 flex items-center gap-2 border-b-2 border-slate-100 pb-3"><i data-lucide="key" class="text-rose-500 w-5 h-5"></i><span>生徒用「合言葉」の変更</span></h3><form onsubmit="handleUpdatePasscode(event)" class="space-y-3"><div><input type="text" id="admin-passcode" required placeholder="読み込み中..." class="w-full px-4 py-2.5 rounded-2xl border-3 border-slate-100 focus:outline-none focus:ring-4 focus:ring-rose-100 focus:border-rose-400 text-sm text-slate-700 font-bold bg-slate-50"></div><button type="submit" class="w-full bg-rose-500 hover:bg-rose-600 text-white font-extrabold py-3 px-4 rounded-2xl shadow-md active:scale-[0.97] transition-all flex items-center justify-center gap-1.5 text-xs"><i data-lucide="save" class="w-4 h-4"></i><span>この合言葉に変更する</span></button></form></div>
                 </div>
-
                 <div class="space-y-6">
                     <div class="bg-white rounded-4xl shadow-sm border-4 border-amber-200 p-5 md:p-6"><h3 class="text-base font-extrabold text-slate-800 mb-4 flex items-center gap-2 border-b-2 border-slate-100 pb-3"><i data-lucide="folder-plus" class="text-amber-500 w-5 h-5"></i><span>新しいカテゴリを増やす</span></h3><form onsubmit="handleCreateCategory(event)" class="space-y-3.5"><div><label class="block text-xs font-extrabold text-slate-600 mb-1">カテゴリ名 (日本語)</label><input type="text" id="cat-ja" required placeholder="例: 語法・文法" class="w-full px-4 py-2.5 rounded-2xl border-3 border-slate-100 focus:outline-none focus:ring-4 focus:ring-amber-100 focus:border-amber-400 text-xs text-slate-700 font-bold bg-slate-50"></div><div><label class="block text-xs font-extrabold text-slate-600 mb-1">英語表記 (大文字)</label><input type="text" id="cat-en" required placeholder="例: GRAMMAR" class="w-full px-4 py-2.5 rounded-2xl border-3 border-slate-100 focus:outline-none focus:ring-4 focus:ring-amber-100 focus:border-amber-400 text-xs text-slate-700 font-bold bg-slate-50"></div><div class="grid grid-cols-2 gap-2"><div><label class="block text-xs font-extrabold text-slate-600 mb-1">色</label><select id="cat-color" required class="w-full px-3 py-2.5 rounded-2xl border-3 border-slate-100 focus:outline-none focus:ring-4 focus:ring-amber-100 focus:border-amber-400 text-xs text-slate-700 font-bold bg-slate-50"><option value="orange">オレンジ</option><option value="teal">ミント</option><option value="sky">スカイ</option><option value="purple">パープル</option><option value="pink">ピンク</option></select></div><div><label class="block text-xs font-extrabold text-slate-600 mb-1">アイコン</label><select id="cat-icon" required class="w-full px-3 py-2.5 rounded-2xl border-3 border-slate-100 focus:outline-none focus:ring-4 focus:ring-amber-100 focus:border-amber-400 text-xs text-slate-700 font-bold bg-slate-50"><option value="calendar">カレンダー</option><option value="list-checks">チェック</option><option value="book-open">本</option><option value="headphones">ヘッドホン</option><option value="pencil">ペン</option></select></div></div><button type="submit" class="w-full bg-amber-400 hover:bg-amber-500 text-slate-900 font-extrabold py-3 px-4 rounded-2xl shadow-md active:scale-[0.97] transition-all flex items-center justify-center gap-1.5 text-xs mt-3"><i data-lucide="plus" class="w-4 h-4"></i><span>カテゴリを作成</span></button></form></div>
-                    
                     <div class="bg-white rounded-4xl shadow-sm border-4 border-slate-100 p-5 md:p-6"><h3 class="text-base font-extrabold text-slate-800 flex items-center gap-2 border-b-2 border-slate-100 pb-3 mb-4"><i data-lucide="folder" class="text-amber-500 w-5 h-5"></i><span>カテゴリの管理・並べ替え・削除</span></h3><div id="admin-categories-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3"></div></div>
                 </div>
             </div>
@@ -247,7 +259,7 @@
         let activeCategory = null;
         let adminStudentSortMode = 'date'; 
 
-        let quizState = { questions: [], currentIndex: 0, score: 0, details: [] };
+        let quizState = { questions: [], currentIndex: 0, score: 0, details: [], questName: "" };
         let countdownTimer = null;
         let currentSortAnswer = []; let currentSortChoices = [];
 
@@ -276,29 +288,14 @@
 
         function showLoginView() { document.getElementById("view-login").classList.remove("hidden"); document.getElementById("view-student").classList.add("hidden"); document.getElementById("view-admin").classList.add("hidden"); document.getElementById("view-quiz").classList.add("hidden"); document.getElementById("view-quiz-finish").classList.add("hidden"); document.getElementById("user-status-bar").classList.add("hidden"); }
         function showStudentView() { document.getElementById("view-login").classList.add("hidden"); document.getElementById("view-student").classList.remove("hidden"); document.getElementById("view-admin").classList.add("hidden"); document.getElementById("view-quiz").classList.add("hidden"); document.getElementById("view-quiz-finish").classList.add("hidden"); document.getElementById("user-status-bar").classList.remove("hidden"); const badge = document.getElementById("user-badge"); badge.textContent = `👤 ${currentStudentId}`; badge.className = "hidden sm:inline-block text-xs bg-sky-100 text-sky-800 border-2 border-sky-200 px-4 py-1.5 rounded-full font-bold"; updateUI(); }
-        
-        function showAdminView() { 
-            document.getElementById("view-login").classList.add("hidden"); document.getElementById("view-student").classList.add("hidden"); document.getElementById("view-admin").classList.remove("hidden"); document.getElementById("view-quiz").classList.add("hidden"); document.getElementById("view-quiz-finish").classList.add("hidden"); document.getElementById("user-status-bar").classList.remove("hidden"); 
-            const badge = document.getElementById("user-badge"); badge.textContent = "👑 管理者モード"; badge.className = "hidden sm:inline-block text-xs bg-blue-100 text-blue-800 border-2 border-blue-200 px-4 py-1.5 rounded-full font-bold"; 
-            switchAdminTab('history');
-            updateUI(); updateAdminHistoryUI(); 
-        }
+        function showAdminView() { document.getElementById("view-login").classList.add("hidden"); document.getElementById("view-student").classList.add("hidden"); document.getElementById("view-admin").classList.remove("hidden"); document.getElementById("view-quiz").classList.add("hidden"); document.getElementById("view-quiz-finish").classList.add("hidden"); document.getElementById("user-status-bar").classList.remove("hidden"); const badge = document.getElementById("user-badge"); badge.textContent = "👑 管理者モード"; badge.className = "hidden sm:inline-block text-xs bg-blue-100 text-blue-800 border-2 border-blue-200 px-4 py-1.5 rounded-full font-bold"; switchAdminTab('history'); updateUI(); updateAdminHistoryUI(); }
 
         window.switchAdminTab = function(tabName) {
             const tabs = ['history', 'questions', 'settings'];
             tabs.forEach(t => {
-                const btn = document.getElementById(`tab-btn-${t}`);
-                const content = document.getElementById(`tab-content-${t}`);
-                if (!btn || !content) return;
-                if (t === tabName) {
-                    content.classList.remove('hidden');
-                    if(t === 'history') btn.className = "px-5 py-3.5 rounded-t-2xl font-extrabold text-sm whitespace-nowrap transition-all bg-sky-100 text-sky-700 border-b-0";
-                    if(t === 'questions') btn.className = "px-5 py-3.5 rounded-t-2xl font-extrabold text-sm whitespace-nowrap transition-all bg-emerald-100 text-emerald-700 border-b-0";
-                    if(t === 'settings') btn.className = "px-5 py-3.5 rounded-t-2xl font-extrabold text-sm whitespace-nowrap transition-all bg-slate-800 text-white border-b-0";
-                } else {
-                    content.classList.add('hidden');
-                    btn.className = "px-5 py-3.5 rounded-t-2xl font-extrabold text-sm whitespace-nowrap transition-all bg-transparent text-slate-400 hover:bg-slate-50";
-                }
+                const btn = document.getElementById(`tab-btn-${t}`); const content = document.getElementById(`tab-content-${t}`); if (!btn || !content) return;
+                if (t === tabName) { content.classList.remove('hidden'); if(t === 'history') btn.className = "px-5 py-3.5 rounded-t-2xl font-extrabold text-sm whitespace-nowrap transition-all bg-sky-100 text-sky-700 border-b-0"; if(t === 'questions') btn.className = "px-5 py-3.5 rounded-t-2xl font-extrabold text-sm whitespace-nowrap transition-all bg-emerald-100 text-emerald-700 border-b-0"; if(t === 'settings') btn.className = "px-5 py-3.5 rounded-t-2xl font-extrabold text-sm whitespace-nowrap transition-all bg-slate-800 text-white border-b-0"; } 
+                else { content.classList.add('hidden'); btn.className = "px-5 py-3.5 rounded-t-2xl font-extrabold text-sm whitespace-nowrap transition-all bg-transparent text-slate-400 hover:bg-slate-50"; }
             });
         };
 
@@ -306,10 +303,8 @@
 
         function shuffleArray(array) { for (let i = array.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [array[i], array[j]] = [array[j], array[i]]; } return array; }
 
-        window.startQuiz = function(subCategoryName) {
-            const questionsForQuest = localQuestions.filter(q => q.sub_category === subCategoryName);
-            if(questionsForQuest.length === 0) return;
-            quizState = { questions: questionsForQuest, currentIndex: 0, score: 0, details: [] };
+        // ★ 新規追加：クイズUIの初期化を共通関数化
+        function initQuizUI() {
             document.getElementById("view-student").classList.add("hidden"); document.getElementById("view-quiz").classList.remove("hidden"); document.getElementById("quiz-total-num").textContent = quizState.questions.length; document.getElementById("quiz-current-num").textContent = "1";
             const contentArea = document.getElementById("quiz-content"); const countdownArea = document.getElementById("quiz-countdown-area"); const countdownText = document.getElementById("countdown-text");
             contentArea.classList.add("hidden"); countdownArea.classList.remove("hidden"); countdownArea.classList.add("flex"); 
@@ -321,6 +316,22 @@
                 } else if (count === 0) { countdownText.textContent = "START!!🚀"; countdownText.classList.remove("text-amber-500"); countdownText.classList.add("text-rose-500"); countdownText.classList.remove("animate-pop-in"); void countdownText.offsetWidth; countdownText.classList.add("animate-pop-in");
                 } else { clearInterval(countdownTimer); countdownTimer = null; countdownArea.classList.add("hidden"); countdownArea.classList.remove("flex"); contentArea.classList.remove("hidden"); renderQuestion(); }
             }, 1000);
+        }
+
+        // ★ 新規追加：デイリークエストを開始する関数
+        window.startDailyQuest = function() {
+            if(localQuestions.length === 0) { showToast("まだ問題が登録されていません"); return; }
+            let shuffled = shuffleArray([...localQuestions]);
+            let selected = shuffled.slice(0, 10); // ランダムに最大10問抽出
+            quizState = { questions: selected, currentIndex: 0, score: 0, details: [], questName: "🎯 今日のランダム10問" };
+            initQuizUI();
+        }
+
+        window.startQuiz = function(subCategoryName) {
+            const questionsForQuest = localQuestions.filter(q => q.sub_category === subCategoryName);
+            if(questionsForQuest.length === 0) return;
+            quizState = { questions: questionsForQuest, currentIndex: 0, score: 0, details: [], questName: subCategoryName };
+            initQuizUI();
         }
 
         function renderQuestion() {
@@ -396,9 +407,10 @@
                 else if (percentage >= 80) { iconEl.textContent = "🌟"; titleEl.textContent = "Excellent!! 😆"; titleEl.className = "text-3xl md:text-4xl font-extrabold text-sky-500 mb-3"; msgEl.textContent = "素晴らしい成績！あとほんの少しでパーフェクトだね。よく頑張りました！"; } 
                 else if (percentage >= 50) { iconEl.textContent = "👍"; titleEl.textContent = "Good Job! 😊"; titleEl.className = "text-3xl md:text-4xl font-extrabold text-emerald-500 mb-3"; msgEl.textContent = "ナイスチャレンジ！着実に力がついている証拠です。間違えたところを見直せば次はもっといけるよ！"; } 
                 else { iconEl.textContent = "💪"; titleEl.textContent = "Nice Try!! 🔥"; titleEl.className = "text-3xl md:text-4xl font-extrabold text-rose-500 mb-3"; msgEl.textContent = "最後まで挑戦し抜いたことが何より素晴らしい！ここからが伸びしろだよ。解説を読んでまた挑もう！"; }
+                
                 if (currentStudentId) {
                     try {
-                        const questName = quizState.questions[0].sub_category;
+                        const questName = quizState.questName || "名称未設定クエスト";
                         await addDoc(collection(db, 'history'), { studentId: currentStudentId, quest: questName, score: score, total: total, percentage: percentage, details: quizState.details, timestamp: new Date().toISOString() });
                     } catch (e) { console.error("履歴の保存エラー", e); }
                 }
@@ -408,6 +420,12 @@
         window.closeQuiz = function() { if(countdownTimer) clearInterval(countdownTimer); document.getElementById("view-quiz").classList.add("hidden"); document.getElementById("view-quiz-finish").classList.add("hidden"); showStudentView(); }
         window.selectCategory = function(categoryKey) { activeCategory = categoryKey; updateUI(); }
         window.setStudentSort = function(mode) { adminStudentSortMode = mode; updateAdminHistoryUI(); }
+        
+        window.deleteQuestion = async function(docId) {
+            if (!confirm(`本当にこの問題（ID: ${docId}）を削除しますか？\n※この操作は取り消せません。`)) return;
+            try { await deleteDoc(doc(db, 'questions', docId)); showToast(`問題（ID: ${docId}）を削除しました🗑️`); } 
+            catch (error) { console.error("削除エラー:", error); showToast("削除に失敗しました"); }
+        }
 
         function updateUI() {
             if(isAdmin) { 
@@ -434,7 +452,7 @@
                             const stat = qStats[q.id] || { count: 0, correct: 0 };
                             const qAcc = stat.count > 0 ? Math.round((stat.correct / stat.count) * 100) : 0;
                             const accColor = qAcc < 50 && stat.count > 0 ? 'text-rose-500' : 'text-emerald-600';
-                            return `<div class="bg-slate-50 border-2 border-slate-200 rounded-xl p-3.5 flex flex-col gap-1.5 hover:border-sky-300 hover:bg-sky-50/50 transition-colors"><div class="flex items-center gap-2 mb-1"><span class="text-[10px] font-extrabold text-slate-400 bg-white px-1.5 py-0.5 rounded border border-slate-200">ID: ${q.id}</span>${typeBadge}</div><p class="text-xs font-bold text-slate-500">${q.question || "問題文なし"}</p><p class="text-sm font-extrabold text-slate-800">${q.sentence || "（英文なし）"}</p><div class="mt-2 pt-2 border-t border-slate-200/60 flex gap-4 text-[10px] font-bold text-slate-500 items-center"><span>📊 解かれた回数: <span class="text-slate-700 text-xs">${stat.count}回</span></span><span>🎯 正答率: <span class="${accColor} text-xs">${qAcc}%</span></span></div></div>`;
+                            return `<div class="bg-slate-50 border-2 border-slate-200 rounded-xl p-3.5 flex flex-col gap-1.5 hover:border-sky-300 hover:bg-sky-50/50 transition-colors"><div class="flex items-center justify-between mb-1"><div class="flex items-center gap-2"><span class="text-[10px] font-extrabold text-slate-400 bg-white px-1.5 py-0.5 rounded border border-slate-200">ID: ${q.id}</span>${typeBadge}</div><button onclick="deleteQuestion('${q.docId}')" class="text-rose-400 hover:bg-rose-100 hover:text-rose-600 p-1.5 rounded-lg transition-colors flex-shrink-0" title="この問題を削除"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button></div><p class="text-xs font-bold text-slate-500">${q.question || "問題文なし"}</p><p class="text-sm font-extrabold text-slate-800">${q.sentence || "（英文なし）"}</p><div class="mt-2 pt-2 border-t border-slate-200/60 flex gap-4 text-[10px] font-bold text-slate-500 items-center"><span>📊 解かれた回数: <span class="text-slate-700 text-xs">${stat.count}回</span></span><span>🎯 正答率: <span class="${accColor} text-xs">${qAcc}%</span></span></div></div>`;
                         }).join("");
                         return `<details class="group bg-white border-2 border-slate-100 rounded-2xl overflow-hidden [&_summary::-webkit-details-marker]:hidden shadow-sm"><summary class="flex justify-between items-center font-extrabold cursor-pointer list-none p-4 hover:bg-slate-50 transition-colors"><div class="flex items-center gap-2.5"><div class="bg-amber-100 text-amber-500 p-1.5 rounded-lg"><i data-lucide="folder-open" class="w-4 h-4"></i></div><span class="text-sm text-slate-700">${subCat}</span><span class="text-xs text-slate-400 font-bold bg-slate-100 px-2 py-1 rounded-full">${qs.length}問</span></div><span class="transition-transform duration-300 group-open:-rotate-180 text-slate-400"><i data-lucide="chevron-down" class="w-5 h-5"></i></span></summary><div class="p-4 pt-0 border-t-2 border-dashed border-slate-100 bg-white flex flex-col gap-3 max-h-[400px] overflow-y-auto custom-scrollbar">${qCards}</div></details>`;
                     }).join("");
@@ -444,11 +462,17 @@
 
             if (currentStudentId) {
                 document.getElementById("student-stats-area").classList.remove("hidden");
+                document.getElementById("student-daily-quest-area").classList.remove("hidden");
+                document.getElementById("student-daily-quest-area").classList.add("flex");
+                
                 const myHistory = localHistory.filter(h => h.studentId === currentStudentId);
                 let totalQs = 0; let totalCorrect = 0;
                 myHistory.forEach(h => { totalQs += h.total; totalCorrect += h.score; });
                 const avg = totalQs > 0 ? Math.round((totalCorrect / totalQs) * 100) : 0;
                 document.getElementById("student-stat-total").textContent = totalQs; document.getElementById("student-stat-avg").textContent = avg;
+            } else {
+                document.getElementById("student-daily-quest-area").classList.add("hidden");
+                document.getElementById("student-daily-quest-area").classList.remove("flex");
             }
 
             const studentCategoriesGrid = document.getElementById("student-categories-grid");
@@ -473,7 +497,6 @@
             } lucide.createIcons();
         }
 
-        // ★ 大幅アップデート：すべての問題（正解・不正解）を表示するように変更
         function updateAdminHistoryUI() {
             if(!isAdmin) return;
             const container = document.getElementById("admin-students-accordion");
@@ -522,12 +545,9 @@
                             const sText = w.sentence || qInfo.sentence || "";
                             const sHtml = sText ? `<span class="block text-slate-800 font-extrabold mt-0.5">${sText}</span>` : "";
                             
-                            // 正解した問題の表示
                             if (w.isCorrect) {
                                 return `<div class="text-[11px] text-slate-500"><span class="text-emerald-500 font-bold">⭕️ ID: ${w.id}</span><span class="block text-slate-600 font-bold mt-0.5">${qText}</span>${sHtml}<div class="mt-1 bg-white border border-emerald-100 rounded p-1.5 inline-block">正解: <span class="text-emerald-600 font-bold">${w.correctAnswer}</span></div></div>`;
-                            } 
-                            // 不正解の問題の表示
-                            else {
+                            } else {
                                 return `<div class="text-[11px] text-slate-500"><span class="text-rose-500 font-bold">❌ ID: ${w.id}</span><span class="block text-slate-600 font-bold mt-0.5">${qText}</span>${sHtml}<div class="mt-1 bg-white border border-rose-100 rounded p-1.5 inline-block">選んだ答え: <span class="text-rose-600 font-bold">${w.userAnswer}</span> <span class="text-slate-300 mx-1">|</span> 正解: <span class="text-emerald-600 font-bold">${w.correctAnswer}</span></div></div>`;
                             }
                         }).join("") + `</div>`;
