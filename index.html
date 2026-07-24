@@ -116,12 +116,20 @@
             
             <div class="bg-white rounded-4xl shadow-sm border-4 border-yellow-100/70 p-4 md:p-10 relative overflow-hidden">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b-2 border-slate-100 pb-4 mb-5 gap-3">
-                    <div class="flex items-center gap-3 min-w-0"><div id="selected-cat-icon-container" class="p-2.5 rounded-xl text-white shadow-md flex-shrink-0"><i id="selected-cat-icon" data-lucide="graduation-cap" class="w-5 h-5 md:w-7 md:h-7"></i></div><div class="min-w-0"><span id="selected-cat-en" class="text-[9px] md:text-[11px] font-extrabold tracking-widest text-slate-400 block truncate uppercase">CATEGORY</span><h3 id="selected-cat-ja" class="text-lg md:text-2xl font-extrabold text-slate-800 truncate">カテゴリタイトル</h3></div></div>
+                    <!-- ★ フリーズの原因だった箇所を修正 ★ -->
+                    <div class="flex items-center gap-3 min-w-0">
+                        <div id="selected-cat-icon-container" class="p-2.5 rounded-xl text-white shadow-md flex-shrink-0">
+                            <!-- ここがJavaScriptで丸ごと入れ替わります -->
+                        </div>
+                        <div class="min-w-0">
+                            <span id="selected-cat-en" class="text-[9px] md:text-[11px] font-extrabold tracking-widest text-slate-400 block truncate uppercase">CATEGORY</span>
+                            <h3 id="selected-cat-ja" class="text-lg md:text-2xl font-extrabold text-slate-800 truncate">カテゴリタイトル</h3>
+                        </div>
+                    </div>
                     <span id="links-count-badge" class="self-start sm:self-auto bg-amber-100 text-amber-800 border border-amber-200 text-xs px-3 py-1.5 rounded-full font-extrabold flex-shrink-0">クエスト: 0個</span>
                 </div>
                 <div id="student-quests-grid" class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 max-w-4xl mx-auto w-full"></div>
                 
-                <!-- ヒント付きの準備中画面 -->
                 <div id="student-empty-state" class="hidden flex flex-col items-center justify-center py-12 md:py-16 text-center"></div>
             </div>
         </section>
@@ -393,7 +401,6 @@
         }
 
         window.startQuiz = function(subCategoryName) {
-            // ★ 改修：空白による不一致を防ぐため、trim() を追加して確実に取り出す
             const questionsForQuest = localQuestions.filter(q => (q.sub_category || "").trim() === subCategoryName.trim());
             if(questionsForQuest.length === 0) return;
             quizState = { questions: questionsForQuest, currentIndex: 0, score: 0, details: [], questName: subCategoryName };
@@ -408,7 +415,6 @@
             document.getElementById("quiz-result-area").classList.add("hidden"); 
             document.getElementById("quiz-explanation-text").innerText = "";
             
-            // ★ 改修：大文字・小文字・空白のブレを自動修正して確実に判定する
             const qType = String(q.type || "default").toLowerCase().trim();
             const isSort = qType === 'sort';
             const isReading = qType === 'reading';
@@ -644,36 +650,58 @@
             const studentCategoriesGrid = document.getElementById("student-categories-grid");
             studentCategoriesGrid.innerHTML = localCategories.map(cat => { const isActive = activeCategory === cat.docId; const borderClass = isActive ? cat.border : 'border-slate-100'; const shadowClass = isActive ? 'shadow-md -translate-y-1' : 'shadow-sm'; return `<button onclick="selectCategory('${cat.docId}')" class="bg-white border-4 ${borderClass} p-3.5 md:p-4 rounded-3xl ${shadowClass} transition-all w-full flex items-center gap-3 text-left"><div class="p-2.5 md:p-3 rounded-2xl flex-shrink-0 ${cat.bg} text-white"><i data-lucide="${cat.icon}" class="w-5 h-5 md:w-6 md:h-6"></i></div><div class="min-w-0 flex-1"><span class="text-[9px] font-extrabold block tracking-wider mb-0.5 truncate ${cat.text}">${cat.en}</span><span class="font-extrabold text-slate-700 text-sm block truncate">${cat.ja}</span></div></button>`; }).join("");
             
-            const currentCatMeta = localCategories.find(c => c.docId === activeCategory);
+            // ★ 安全対策：カテゴリが見つからなかったら最初のものを強制選択
+            let currentCatMeta = localCategories.find(c => c.docId === activeCategory);
+            if (!currentCatMeta && localCategories.length > 0) {
+                activeCategory = localCategories[0].docId;
+                currentCatMeta = localCategories[0];
+            }
+
             if (currentCatMeta) {
-                document.getElementById("selected-cat-ja").textContent = currentCatMeta.ja; document.getElementById("selected-cat-en").textContent = currentCatMeta.en; document.getElementById("selected-cat-icon-container").className = `p-2.5 md:p-3 rounded-2xl text-white shadow-md ${currentCatMeta.bg}`; document.getElementById("selected-cat-icon").setAttribute("data-lucide", currentCatMeta.icon);
+                const titleJa = document.getElementById("selected-cat-ja");
+                const titleEn = document.getElementById("selected-cat-en");
+                const iconContainer = document.getElementById("selected-cat-icon-container");
+
+                if (titleJa) titleJa.textContent = currentCatMeta.ja; 
+                if (titleEn) titleEn.textContent = currentCatMeta.en; 
                 
-                // ★ 改修：空白のズレを自動修正して照合する
+                // ★ 修正箇所：アイコンを入れ替えるのではなく、丸ごと作り直す（エラー完全防止）
+                if (iconContainer) {
+                    iconContainer.className = `p-2.5 md:p-3 rounded-2xl text-white shadow-md flex-shrink-0 ${currentCatMeta.bg}`; 
+                    iconContainer.innerHTML = `<i data-lucide="${currentCatMeta.icon}" class="w-5 h-5 md:w-7 md:h-7"></i>`;
+                }
+                
                 const catQuestions = localQuestions.filter(q => (q.main_category || "").trim() === (currentCatMeta.ja || "").trim()); 
-                
                 const uniqueSubCats = [...new Set(catQuestions.map(q => (q.sub_category || "").trim()))].filter(Boolean); 
                 uniqueSubCats.sort(); 
                 
-                const questsGrid = document.getElementById("student-quests-grid"); const emptyState = document.getElementById("student-empty-state"); document.getElementById("links-count-badge").textContent = `クエスト: ${uniqueSubCats.length}個`;
+                const questsGrid = document.getElementById("student-quests-grid"); 
+                const emptyState = document.getElementById("student-empty-state"); 
+                const badge = document.getElementById("links-count-badge");
+                if (badge) badge.textContent = `クエスト: ${uniqueSubCats.length}個`;
                 
                 if (uniqueSubCats.length === 0) { 
-                    questsGrid.innerHTML = ""; 
-                    // ★ 改修：もし空っぽだった場合、先生に原因をお知らせするヒントを表示！
-                    emptyState.innerHTML = `<span class="text-5xl md:text-6xl mb-4 animate-float">💤</span><h4 class="text-base md:text-lg font-extrabold text-slate-700">準備中のクエスト</h4><p class="text-xs md:text-sm text-slate-400 max-w-xs mt-2 font-bold leading-relaxed">まだこの冒険にはクエストがないみたい。<br>先生が用意するまで少し待っててね！</p><div class="mt-6 p-4 bg-rose-50 border-2 border-rose-200 rounded-2xl text-left max-w-xs text-xs font-bold text-rose-500 shadow-sm"><p class="text-sm mb-1">【先生へ：表示されない原因】</p>① CSVの「main_category」の文字が「${currentCatMeta.ja}」と完全に一致していない。<br>② CSVのID欄が空欄のままアップロードされたため、問題が読み込まれていない。</div>`;
-                    emptyState.classList.remove("hidden"); 
+                    if (questsGrid) questsGrid.innerHTML = ""; 
+                    if (emptyState) {
+                        emptyState.innerHTML = `<span class="text-5xl md:text-6xl mb-4 animate-float">💤</span><h4 class="text-base md:text-lg font-extrabold text-slate-700">準備中のクエスト</h4><p class="text-xs md:text-sm text-slate-400 max-w-xs mt-2 font-bold leading-relaxed">まだこの冒険にはクエストがないみたい。<br>先生が用意するまで少し待っててね！</p><div class="mt-6 p-4 bg-rose-50 border-2 border-rose-200 rounded-2xl text-left max-w-xs text-xs font-bold text-rose-500 shadow-sm"><p class="text-sm mb-1">【先生へ：表示されない原因】</p>① CSVの「main_category」の文字が「${currentCatMeta.ja}」と完全に一致していない。<br>② CSVのID欄が空欄のままアップロードされたため、問題が読み込まれていない。</div>`;
+                        emptyState.classList.remove("hidden"); 
+                    }
                 } else {
-                    emptyState.classList.add("hidden");
-                    questsGrid.innerHTML = uniqueSubCats.map(subCat => { 
-                        const totalQCount = catQuestions.filter(q => (q.sub_category || "").trim() === subCat).length; 
-                        const myQuestHistory = localHistory.filter(h => h.studentId === currentStudentId && h.quest === subCat);
-                        let maxScore = -1; myQuestHistory.forEach(h => { if(h.score > maxScore) maxScore = h.score; });
-                        let badgeHTML = '';
-                        if (maxScore === totalQCount && totalQCount > 0) { badgeHTML = `<span class="bg-amber-100 text-amber-600 text-[10px] px-2 py-0.5 rounded-full font-extrabold ml-2 border border-amber-200 shrink-0">👑 PERFECT!</span>`; } 
-                        else if (maxScore >= 0) { badgeHTML = `<span class="bg-sky-100 text-sky-600 text-[10px] px-2 py-0.5 rounded-full font-extrabold ml-2 border border-sky-200 shrink-0">最高: ${maxScore}/${totalQCount}</span>`; }
-                        return `<button onclick="startQuiz('${subCat.replace(/'/g, "\\'")}')" class="bg-white hover:bg-amber-50 border-2 border-slate-100 hover:border-amber-300 p-4 md:p-5 rounded-3xl shadow-sm hover:shadow-md transition-all group flex items-center justify-between text-left w-full"><div class="min-w-0 pr-2 flex-1"><div class="flex items-center"><h4 class="font-extrabold text-slate-800 text-sm md:text-base leading-snug truncate group-hover:text-amber-600 transition-colors">${subCat}</h4>${badgeHTML}</div><p class="text-xs text-slate-400 font-bold mt-1.5">全 ${totalQCount} 問</p></div><div class="bg-amber-100 text-amber-500 p-2.5 rounded-full flex-shrink-0 group-hover:bg-amber-500 group-hover:text-white transition-colors"><i data-lucide="play" class="w-5 h-5 ml-0.5"></i></div></button>`; 
-                    }).join("");
+                    if (emptyState) emptyState.classList.add("hidden");
+                    if (questsGrid) {
+                        questsGrid.innerHTML = uniqueSubCats.map(subCat => { 
+                            const totalQCount = catQuestions.filter(q => (q.sub_category || "").trim() === subCat).length; 
+                            const myQuestHistory = localHistory.filter(h => h.studentId === currentStudentId && h.quest === subCat);
+                            let maxScore = -1; myQuestHistory.forEach(h => { if(h.score > maxScore) maxScore = h.score; });
+                            let badgeHTML = '';
+                            if (maxScore === totalQCount && totalQCount > 0) { badgeHTML = `<span class="bg-amber-100 text-amber-600 text-[10px] px-2 py-0.5 rounded-full font-extrabold ml-2 border border-amber-200 shrink-0">👑 PERFECT!</span>`; } 
+                            else if (maxScore >= 0) { badgeHTML = `<span class="bg-sky-100 text-sky-600 text-[10px] px-2 py-0.5 rounded-full font-extrabold ml-2 border border-sky-200 shrink-0">最高: ${maxScore}/${totalQCount}</span>`; }
+                            return `<button onclick="startQuiz('${subCat.replace(/'/g, "\\'")}')" class="bg-white hover:bg-amber-50 border-2 border-slate-100 hover:border-amber-300 p-4 md:p-5 rounded-3xl shadow-sm hover:shadow-md transition-all group flex items-center justify-between text-left w-full"><div class="min-w-0 pr-2 flex-1"><div class="flex items-center"><h4 class="font-extrabold text-slate-800 text-sm md:text-base leading-snug truncate group-hover:text-amber-600 transition-colors">${subCat}</h4>${badgeHTML}</div><p class="text-xs text-slate-400 font-bold mt-1.5">全 ${totalQCount} 問</p></div><div class="bg-amber-100 text-amber-500 p-2.5 rounded-full flex-shrink-0 group-hover:bg-amber-500 group-hover:text-white transition-colors"><i data-lucide="play" class="w-5 h-5 ml-0.5"></i></div></button>`; 
+                        }).join("");
+                    }
                 }
-            } lucide.createIcons();
+            } 
+            lucide.createIcons();
         }
 
         function updateAdminHistoryUI() {
@@ -751,10 +779,8 @@
                     try { 
                         let batch = writeBatch(db); let count = 0; 
                         for (const row of data) { 
-                            // 空白行はスキップ
                             if (!row.main_category && !row.question && !row.sentence) continue; 
                             
-                            // ★ 改修：IDが空欄なら自動で生成してあげる！
                             let docId = String(row.id || "").trim(); 
                             if (docId === "") {
                                 docId = "q_" + Date.now() + "_" + Math.floor(Math.random() * 10000);
@@ -764,7 +790,7 @@
                                 id: docId, 
                                 main_category: String(row.main_category || "").trim(), 
                                 sub_category: String(row.sub_category || "").trim(), 
-                                type: String(row.type || "default").trim().toLowerCase(), // ★ 改修：大文字も全て小文字に揃える
+                                type: String(row.type || "default").trim().toLowerCase(), 
                                 question: String(row.question || "").trim(), 
                                 sentence: String(row.sentence || "").trim(), 
                                 answer1: String(row.answer1 || "").trim(), 
