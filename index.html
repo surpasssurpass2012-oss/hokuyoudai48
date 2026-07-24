@@ -74,7 +74,6 @@
             <div class="text-center mb-8 relative"><span class="text-5xl inline-block mb-3 animate-float">🚀</span><h2 class="text-2xl md:text-3xl font-extrabold text-slate-800 tracking-tight">こんにちは！</h2></div>
             <div id="login-alert" class="hidden mb-6 p-4 rounded-3xl text-sm bg-rose-50 text-rose-600 border-2 border-rose-100 flex items-center gap-3"><span class="text-2xl flex-shrink-0">⚠️</span><span id="login-alert-text" class="font-bold">合言葉が違うみたい。</span></div>
             <form onsubmit="handleStudentLogin(event)" class="space-y-5 relative z-10">
-                <!-- ★ 改修：ID入力欄を自由に文字が打てるように変更 -->
                 <div>
                     <label class="block text-sm font-extrabold text-slate-500 mb-2 ml-1 text-center">自分専用のID（学籍番号＋秘密の文字）</label>
                     <div class="relative"><span class="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400"><i data-lucide="user" class="w-5 h-5 text-sky-400"></i></span><input type="text" id="login-student-id" placeholder="例: 1901takara" required class="w-full pl-11 pr-4 py-3.5 rounded-2xl border-3 border-slate-100 bg-slate-50 focus:bg-white focus:outline-none focus:ring-4 focus:ring-sky-100 focus:border-sky-400 transition-all font-bold text-base text-slate-700"></div>
@@ -139,7 +138,11 @@
                     <p id="quiz-question-text" class="text-sm md:text-base font-bold text-slate-500 mb-2">問題文</p>
                     <h2 id="quiz-sentence-text" class="text-xl md:text-3xl font-extrabold text-slate-800 leading-relaxed">Sentence</h2>
                 </div>
+                
+                <!-- 4択問題用エリア -->
                 <div id="quiz-options-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6 hidden"></div>
+                
+                <!-- 並べ替え問題用エリア -->
                 <div id="quiz-sort-area" class="mb-6 hidden">
                     <div class="mb-4">
                         <p class="text-xs font-bold text-slate-400 mb-2 ml-1"><i data-lucide="hand" class="inline w-3 h-3 mb-0.5"></i> タップして解答欄に並べよう</p>
@@ -150,15 +153,35 @@
                         <i data-lucide="check-circle" class="w-6 h-6"></i><span>これで判定！</span>
                     </button>
                 </div>
+
+                <!-- ★ 新規：リーディング（フラッシュカード）用エリア ★ -->
+                <div id="quiz-reading-area" class="mb-6 hidden">
+                    <button id="reading-show-btn" onclick="showReadingAnswer()" class="w-full bg-sky-100 hover:bg-sky-200 text-sky-700 font-extrabold py-5 px-6 rounded-2xl shadow-sm transition-all flex items-center justify-center gap-2 text-lg border-4 border-sky-200 active:scale-95">
+                        <i data-lucide="eye" class="w-6 h-6"></i><span>訳と解説を見る</span>
+                    </button>
+                </div>
+
                 <div id="quiz-result-area" class="hidden animate-fade-in">
                     <div id="quiz-result-badge" class="text-center text-2xl font-extrabold mb-4 py-2 rounded-2xl"></div>
                     <div class="bg-slate-50 p-5 rounded-2xl border-2 border-slate-100 mb-6">
-                        <p class="text-xs font-bold text-slate-400 mb-2 flex items-center gap-1"><i data-lucide="book-open" class="w-4 h-4"></i> 解説</p>
+                        <p class="text-xs font-bold text-slate-400 mb-2 flex items-center gap-1"><i data-lucide="book-open" class="w-4 h-4"></i> 解説・訳</p>
                         <p id="quiz-explanation-text" class="text-sm md:text-base font-bold text-slate-700 leading-relaxed whitespace-pre-wrap"></p>
                     </div>
+
+                    <!-- テスト用 次へボタン -->
                     <button id="quiz-next-btn" onclick="nextQuiz()" class="w-full bg-amber-400 hover:bg-amber-500 text-slate-900 font-extrabold py-4 px-6 rounded-2xl shadow-md active:scale-[0.97] transition-all flex items-center justify-center gap-2 text-lg">
                         <span>次の問題へ</span><i data-lucide="arrow-right" class="w-5 h-5"></i>
                     </button>
+
+                    <!-- リーディング用 前・次ナビゲーション -->
+                    <div id="reading-nav-buttons" class="w-full flex gap-3 hidden">
+                        <button id="reading-prev-btn" onclick="prevQuiz()" class="w-1/3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-extrabold py-4 px-2 rounded-2xl shadow-sm transition-all flex items-center justify-center gap-1 text-sm border-4 border-slate-200 active:scale-95">
+                            <i data-lucide="arrow-left" class="w-5 h-5"></i><span>前へ</span>
+                        </button>
+                        <button id="reading-next-btn" onclick="nextQuizReading()" class="w-2/3 bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold py-4 px-4 rounded-2xl shadow-md transition-all flex items-center justify-center gap-2 text-lg border-4 border-emerald-600 active:scale-95">
+                            <span>次のフレーズへ</span><i data-lucide="arrow-right" class="w-5 h-5"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
         </section>
@@ -381,19 +404,97 @@
 
         function renderQuestion() {
             const q = quizState.questions[quizState.currentIndex];
-            document.getElementById("quiz-current-num").textContent = quizState.currentIndex + 1; document.getElementById("quiz-question-text").textContent = q.question || "次の問題に答えなさい"; document.getElementById("quiz-sentence-text").textContent = q.sentence || ""; document.getElementById("quiz-result-area").classList.add("hidden"); document.getElementById("quiz-explanation-text").innerText = "";
+            document.getElementById("quiz-current-num").textContent = quizState.currentIndex + 1; 
+            document.getElementById("quiz-question-text").textContent = q.question || "次の問題に答えなさい"; 
+            document.getElementById("quiz-sentence-text").textContent = q.sentence || ""; 
+            document.getElementById("quiz-result-area").classList.add("hidden"); 
+            document.getElementById("quiz-explanation-text").innerText = "";
+            
             const isSort = q.type === 'sort';
-            if (isSort) {
-                document.getElementById("quiz-options-grid").classList.add("hidden"); document.getElementById("quiz-sort-area").classList.remove("hidden");
+            const isReading = q.type === 'reading'; // ★ 新規追加：リーディングモード判定
+
+            // ★ UIの切り替え処理
+            if (isReading) {
+                document.getElementById("quiz-options-grid").classList.add("hidden"); 
+                document.getElementById("quiz-sort-area").classList.add("hidden");
+                document.getElementById("quiz-reading-area").classList.remove("hidden");
+                
+                document.getElementById("reading-show-btn").classList.remove("hidden");
+                document.getElementById("reading-nav-buttons").classList.add("hidden");
+                document.getElementById("reading-nav-buttons").classList.remove("flex");
+                
+                document.getElementById("quiz-next-btn").classList.add("hidden");
+                document.getElementById("quiz-next-btn").classList.remove("flex");
+            } else if (isSort) {
+                document.getElementById("quiz-options-grid").classList.add("hidden"); 
+                document.getElementById("quiz-reading-area").classList.add("hidden");
+                document.getElementById("quiz-sort-area").classList.remove("hidden");
+                
+                document.getElementById("quiz-next-btn").classList.remove("hidden");
+                document.getElementById("quiz-next-btn").classList.add("flex");
+                
                 const dropArea = document.getElementById("sort-drop-area"); dropArea.className = "min-h-[68px] bg-slate-50 border-2 border-dashed border-slate-300 rounded-2xl p-3 flex flex-wrap gap-2 items-center transition-colors";
                 let options = [q.option1, q.option2, q.option3, q.option4, q.option5, q.option6, q.option7, q.option8].filter(opt => opt && opt.trim() !== "");
                 currentSortChoices = shuffleArray(options); currentSortAnswer = []; renderSortArea();
             } else {
-                document.getElementById("quiz-sort-area").classList.add("hidden"); document.getElementById("quiz-options-grid").classList.remove("hidden");
+                document.getElementById("quiz-sort-area").classList.add("hidden"); 
+                document.getElementById("quiz-reading-area").classList.add("hidden");
+                document.getElementById("quiz-options-grid").classList.remove("hidden");
+                
+                document.getElementById("quiz-next-btn").classList.remove("hidden");
+                document.getElementById("quiz-next-btn").classList.add("flex");
+
                 let options = [q.option1, q.option2, q.option3, q.option4, q.option5, q.option6, q.option7, q.option8].filter(opt => opt && opt.trim() !== "");
                 options = shuffleArray(options);
                 const optionsGrid = document.getElementById("quiz-options-grid");
                 optionsGrid.innerHTML = options.map((opt, index) => `<button onclick="answerQuiz('${opt.replace(/'/g, "\\'")}')" class="quiz-option-btn bg-slate-50 hover:bg-amber-50 text-slate-700 font-extrabold py-4 px-6 rounded-2xl border-4 border-slate-100 hover:border-amber-300 transition-all text-left flex items-center gap-4 text-base md:text-lg"><span class="bg-white text-slate-400 w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 border-2 border-slate-200 text-sm">${index + 1}</span><span>${opt}</span></button>`).join("");
+            }
+        }
+
+        // ★ 新規追加：リーディングモード用アクション ★
+        window.showReadingAnswer = function() {
+            const q = quizState.questions[quizState.currentIndex];
+            document.getElementById("reading-show-btn").classList.add("hidden");
+            
+            const navArea = document.getElementById("reading-nav-buttons");
+            navArea.classList.remove("hidden"); navArea.classList.add("flex");
+            
+            const prevBtn = document.getElementById("reading-prev-btn");
+            if(quizState.currentIndex === 0) {
+                prevBtn.disabled = true; prevBtn.classList.add("opacity-50", "cursor-not-allowed");
+            } else {
+                prevBtn.disabled = false; prevBtn.classList.remove("opacity-50", "cursor-not-allowed");
+            }
+
+            const nextBtn = document.getElementById("reading-next-btn");
+            if (quizState.currentIndex === quizState.questions.length - 1) {
+                nextBtn.innerHTML = `<span>完了して結果を見る</span><i data-lucide="award" class="w-5 h-5"></i>`;
+            } else {
+                nextBtn.innerHTML = `<span>次のフレーズへ</span><i data-lucide="arrow-right" class="w-5 h-5"></i>`;
+            }
+
+            document.getElementById("quiz-result-badge").className = "hidden"; // リーディング時は⭕️❌バッジを非表示
+            document.getElementById("quiz-explanation-text").innerText = q.explanation || "（解説・訳の登録がありません）"; 
+            document.getElementById("quiz-result-area").classList.remove("hidden");
+            lucide.createIcons();
+        }
+
+        window.nextQuizReading = function() {
+            const q = quizState.questions[quizState.currentIndex];
+            // 確認済みとしてスコアと詳細を追加
+            quizState.details.push({ id: q.id, question: q.question, sentence: q.sentence, isCorrect: true, userAnswer: '確認済み', correctAnswer: '確認済み' });
+            quizState.score++;
+            document.getElementById("quiz-result-badge").classList.remove("hidden"); // 次の問題用にバッジを復活
+            nextQuiz(); 
+        }
+
+        window.prevQuiz = function() {
+            if(quizState.currentIndex > 0) {
+                quizState.currentIndex--;
+                quizState.details.pop(); // 戻る場合は前回の記録を削除
+                quizState.score--;
+                document.getElementById("quiz-result-badge").classList.remove("hidden"); // 次の問題用にバッジを復活
+                renderQuestion();
             }
         }
 
@@ -448,7 +549,7 @@
                 const score = quizState.score; const total = quizState.questions.length; const percentage = Math.round((score / total) * 100);
                 document.getElementById("finish-score").textContent = score; document.getElementById("finish-total").textContent = total;
                 const iconEl = document.getElementById("finish-icon"); const titleEl = document.getElementById("finish-title"); const msgEl = document.getElementById("finish-message");
-                if (percentage === 100) { iconEl.textContent = "🏆"; titleEl.textContent = "Perfect!! ✨"; titleEl.className = "text-3xl md:text-4xl font-extrabold text-amber-500 mb-3"; msgEl.textContent = "全問正解おめでとう！完璧な理解です。この調子でどんどん進もう！"; } 
+                if (percentage === 100) { iconEl.textContent = "🏆"; titleEl.textContent = "Perfect!! ✨"; titleEl.className = "text-3xl md:text-4xl font-extrabold text-amber-500 mb-3"; msgEl.textContent = "最後までやりきりました！完璧な理解です。この調子でどんどん進もう！"; } 
                 else if (percentage >= 80) { iconEl.textContent = "🌟"; titleEl.textContent = "Excellent!! 😆"; titleEl.className = "text-3xl md:text-4xl font-extrabold text-sky-500 mb-3"; msgEl.textContent = "素晴らしい成績！あとほんの少しでパーフェクトだね。よく頑張りました！"; } 
                 else if (percentage >= 50) { iconEl.textContent = "👍"; titleEl.textContent = "Good Job! 😊"; titleEl.className = "text-3xl md:text-4xl font-extrabold text-emerald-500 mb-3"; msgEl.textContent = "ナイスチャレンジ！着実に力がついている証拠です。間違えたところを見直せば次はもっといけるよ！"; } 
                 else { iconEl.textContent = "💪"; titleEl.textContent = "Nice Try!! 🔥"; titleEl.className = "text-3xl md:text-4xl font-extrabold text-rose-500 mb-3"; msgEl.textContent = "最後まで挑戦し抜いたことが何より素晴らしい！ここからが伸びしろだよ。解説を読んでまた挑もう！"; }
@@ -505,7 +606,17 @@
                         qs.sort((a, b) => { const idA = parseInt(a.id, 10) || 0; const idB = parseInt(b.id, 10) || 0; return idA - idB; });
                         const qCards = qs.map(q => {
                             const isSort = q.type === 'sort';
-                            const typeBadge = isSort ? `<span class="bg-purple-100 text-purple-700 px-2 py-0.5 rounded border border-purple-200 text-[10px] font-extrabold shadow-sm">並べ替え</span>` : `<span class="bg-blue-100 text-blue-700 px-2 py-0.5 rounded border border-blue-200 text-[10px] font-extrabold shadow-sm">4択</span>`;
+                            const isReading = q.type === 'reading'; // ★ 管理画面のバッジ用判定
+                            
+                            let typeBadge = '';
+                            if (isSort) {
+                                typeBadge = `<span class="bg-purple-100 text-purple-700 px-2 py-0.5 rounded border border-purple-200 text-[10px] font-extrabold shadow-sm">並べ替え</span>`;
+                            } else if (isReading) {
+                                typeBadge = `<span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded border border-emerald-200 text-[10px] font-extrabold shadow-sm">読解</span>`;
+                            } else {
+                                typeBadge = `<span class="bg-blue-100 text-blue-700 px-2 py-0.5 rounded border border-blue-200 text-[10px] font-extrabold shadow-sm">4択</span>`;
+                            }
+
                             const stat = qStats[q.id] || { count: 0, correct: 0 };
                             const qAcc = stat.count > 0 ? Math.round((stat.correct / stat.count) * 100) : 0;
                             const accColor = qAcc < 50 && stat.count > 0 ? 'text-rose-500' : 'text-emerald-600';
