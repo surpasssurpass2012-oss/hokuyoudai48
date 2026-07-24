@@ -139,10 +139,8 @@
                     <h2 id="quiz-sentence-text" class="text-xl md:text-3xl font-extrabold text-slate-800 leading-relaxed">Sentence</h2>
                 </div>
                 
-                <!-- 4択問題用エリア -->
                 <div id="quiz-options-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6 hidden"></div>
                 
-                <!-- 並べ替え問題用エリア -->
                 <div id="quiz-sort-area" class="mb-6 hidden">
                     <div class="mb-4">
                         <p class="text-xs font-bold text-slate-400 mb-2 ml-1"><i data-lucide="hand" class="inline w-3 h-3 mb-0.5"></i> タップして解答欄に並べよう</p>
@@ -154,7 +152,6 @@
                     </button>
                 </div>
 
-                <!-- ★ 新規：リーディング（フラッシュカード）用エリア ★ -->
                 <div id="quiz-reading-area" class="mb-6 hidden">
                     <button id="reading-show-btn" onclick="showReadingAnswer()" class="w-full bg-sky-100 hover:bg-sky-200 text-sky-700 font-extrabold py-5 px-6 rounded-2xl shadow-sm transition-all flex items-center justify-center gap-2 text-lg border-4 border-sky-200 active:scale-95">
                         <i data-lucide="eye" class="w-6 h-6"></i><span>訳と解説を見る</span>
@@ -168,12 +165,10 @@
                         <p id="quiz-explanation-text" class="text-sm md:text-base font-bold text-slate-700 leading-relaxed whitespace-pre-wrap"></p>
                     </div>
 
-                    <!-- テスト用 次へボタン -->
                     <button id="quiz-next-btn" onclick="nextQuiz()" class="w-full bg-amber-400 hover:bg-amber-500 text-slate-900 font-extrabold py-4 px-6 rounded-2xl shadow-md active:scale-[0.97] transition-all flex items-center justify-center gap-2 text-lg">
                         <span>次の問題へ</span><i data-lucide="arrow-right" class="w-5 h-5"></i>
                     </button>
 
-                    <!-- リーディング用 前・次ナビゲーション -->
                     <div id="reading-nav-buttons" class="w-full flex gap-3 hidden">
                         <button id="reading-prev-btn" onclick="prevQuiz()" class="w-1/3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-extrabold py-4 px-2 rounded-2xl shadow-sm transition-all flex items-center justify-center gap-1 text-sm border-4 border-slate-200 active:scale-95">
                             <i data-lucide="arrow-left" class="w-5 h-5"></i><span>前へ</span>
@@ -319,7 +314,8 @@
 
         function syncFirestoreData() {
             if (!currentUser) return; 
-            onSnapshot(collection(db, 'categories'), (snapshot) => { localCategories = []; snapshot.forEach(doc => { localCategories.push({ docId: doc.id, ...doc.data() }); }); localCategories.sort((a, b) => (a.order || 0) - (b.order || 0)); if (localCategories.length > 0 && !activeCategory) activeCategory = localCategories[0].id; updateUI(); });
+            // ★ バグ修正箇所①：.id ではなく .docId で初期カテゴリを設定する
+            onSnapshot(collection(db, 'categories'), (snapshot) => { localCategories = []; snapshot.forEach(doc => { localCategories.push({ docId: doc.id, ...doc.data() }); }); localCategories.sort((a, b) => (a.order || 0) - (b.order || 0)); if (localCategories.length > 0 && !activeCategory) activeCategory = localCategories[0].docId; updateUI(); });
             onSnapshot(collection(db, 'questions'), (snapshot) => { localQuestions = []; snapshot.forEach(doc => { localQuestions.push({ docId: doc.id, ...doc.data() }); }); updateUI(); updateAdminHistoryUI(); });
             onSnapshot(collection(db, 'history'), (snapshot) => { localHistory = []; snapshot.forEach(doc => { localHistory.push({ docId: doc.id, ...doc.data() }); }); updateAdminHistoryUI(); if(!isAdmin) updateUI(); });
             onSnapshot(doc(db, 'settings', 'passcode'), (docSnap) => { if (docSnap.exists()) { systemPasscode = docSnap.data().value; const passInput = document.getElementById('admin-passcode'); if(passInput && document.activeElement !== passInput) { passInput.value = systemPasscode; } } });
@@ -331,7 +327,7 @@
 
         function showLoginView() { document.getElementById("view-login").classList.remove("hidden"); document.getElementById("view-student").classList.add("hidden"); document.getElementById("view-admin").classList.add("hidden"); document.getElementById("view-quiz").classList.add("hidden"); document.getElementById("view-quiz-finish").classList.add("hidden"); document.getElementById("user-status-bar").classList.add("hidden"); }
         function showStudentView() { document.getElementById("view-login").classList.add("hidden"); document.getElementById("view-student").classList.remove("hidden"); document.getElementById("view-admin").classList.add("hidden"); document.getElementById("view-quiz").classList.add("hidden"); document.getElementById("view-quiz-finish").classList.add("hidden"); document.getElementById("user-status-bar").classList.remove("hidden"); const badge = document.getElementById("user-badge"); badge.textContent = `👤 ${currentStudentId}`; badge.className = "hidden sm:inline-block text-xs bg-sky-100 text-sky-800 border-2 border-sky-200 px-4 py-1.5 rounded-full font-bold"; updateUI(); }
-        function showAdminView() { document.getElementById("view-login").classList.add("hidden"); document.getElementById("view-student").classList.add("hidden"); document.getElementById("view-admin").classList.remove("hidden"); document.getElementById("view-quiz").classList.add("hidden"); document.getElementById("view-quiz-finish").classList.add("hidden"); document.getElementById("user-status-bar").classList.remove("hidden"); const badge = document.getElementById("user-badge"); badge.textContent = "👑 管理者モード"; badge.className = "hidden sm:inline-block text-xs bg-blue-100 text-blue-800 border-2 border-blue-200 px-4 py-1.5 rounded-full font-bold"; switchAdminTab('history'); updateUI(); updateAdminHistoryUI(); }
+        function showAdminView() { document.getElementById("view-login").classList.add("hidden"); document.getElementById("view-student").classList.add("hidden"); document.getElementById("view-admin").classList.remove("hidden"); document.getElementById("view-quiz").classList.add("hidden"); document.getElementById("view-quiz-finish").classList.add("hidden"); document.getElementById("user-status-bar").remove("hidden"); const badge = document.getElementById("user-badge"); badge.textContent = "👑 管理者モード"; badge.className = "hidden sm:inline-block text-xs bg-blue-100 text-blue-800 border-2 border-blue-200 px-4 py-1.5 rounded-full font-bold"; switchAdminTab('history'); updateUI(); updateAdminHistoryUI(); }
 
         window.switchAdminTab = function(tabName) {
             const tabs = ['history', 'questions', 'settings'];
@@ -411,9 +407,8 @@
             document.getElementById("quiz-explanation-text").innerText = "";
             
             const isSort = q.type === 'sort';
-            const isReading = q.type === 'reading'; // ★ 新規追加：リーディングモード判定
+            const isReading = q.type === 'reading';
 
-            // ★ UIの切り替え処理
             if (isReading) {
                 document.getElementById("quiz-options-grid").classList.add("hidden"); 
                 document.getElementById("quiz-sort-area").classList.add("hidden");
@@ -451,7 +446,6 @@
             }
         }
 
-        // ★ 新規追加：リーディングモード用アクション ★
         window.showReadingAnswer = function() {
             const q = quizState.questions[quizState.currentIndex];
             document.getElementById("reading-show-btn").classList.add("hidden");
@@ -473,7 +467,7 @@
                 nextBtn.innerHTML = `<span>次のフレーズへ</span><i data-lucide="arrow-right" class="w-5 h-5"></i>`;
             }
 
-            document.getElementById("quiz-result-badge").className = "hidden"; // リーディング時は⭕️❌バッジを非表示
+            document.getElementById("quiz-result-badge").className = "hidden"; 
             document.getElementById("quiz-explanation-text").innerText = q.explanation || "（解説・訳の登録がありません）"; 
             document.getElementById("quiz-result-area").classList.remove("hidden");
             lucide.createIcons();
@@ -481,19 +475,18 @@
 
         window.nextQuizReading = function() {
             const q = quizState.questions[quizState.currentIndex];
-            // 確認済みとしてスコアと詳細を追加
             quizState.details.push({ id: q.id, question: q.question, sentence: q.sentence, isCorrect: true, userAnswer: '確認済み', correctAnswer: '確認済み' });
             quizState.score++;
-            document.getElementById("quiz-result-badge").classList.remove("hidden"); // 次の問題用にバッジを復活
+            document.getElementById("quiz-result-badge").classList.remove("hidden"); 
             nextQuiz(); 
         }
 
         window.prevQuiz = function() {
             if(quizState.currentIndex > 0) {
                 quizState.currentIndex--;
-                quizState.details.pop(); // 戻る場合は前回の記録を削除
+                quizState.details.pop(); 
                 quizState.score--;
-                document.getElementById("quiz-result-badge").classList.remove("hidden"); // 次の問題用にバッジを復活
+                document.getElementById("quiz-result-badge").classList.remove("hidden"); 
                 renderQuestion();
             }
         }
@@ -564,6 +557,8 @@
         }
 
         window.closeQuiz = function() { if(countdownTimer) clearInterval(countdownTimer); document.getElementById("view-quiz").classList.add("hidden"); document.getElementById("view-quiz-finish").classList.add("hidden"); showStudentView(); }
+        
+        // ★ バグ修正箇所②：cat.id ではなく cat.docId で照合する
         window.selectCategory = function(categoryKey) { activeCategory = categoryKey; updateUI(); }
         window.setStudentSort = function(mode) { adminStudentSortMode = mode; updateAdminHistoryUI(); }
         
@@ -606,7 +601,7 @@
                         qs.sort((a, b) => { const idA = parseInt(a.id, 10) || 0; const idB = parseInt(b.id, 10) || 0; return idA - idB; });
                         const qCards = qs.map(q => {
                             const isSort = q.type === 'sort';
-                            const isReading = q.type === 'reading'; // ★ 管理画面のバッジ用判定
+                            const isReading = q.type === 'reading'; 
                             
                             let typeBadge = '';
                             if (isSort) {
@@ -644,8 +639,11 @@
             }
 
             const studentCategoriesGrid = document.getElementById("student-categories-grid");
-            studentCategoriesGrid.innerHTML = localCategories.map(cat => { const isActive = activeCategory === cat.id; const borderClass = isActive ? cat.border : 'border-slate-100'; const shadowClass = isActive ? 'shadow-md -translate-y-1' : 'shadow-sm'; return `<button onclick="selectCategory('${cat.id}')" class="bg-white border-4 ${borderClass} p-3.5 md:p-4 rounded-3xl ${shadowClass} transition-all w-full flex items-center gap-3 text-left"><div class="p-2.5 md:p-3 rounded-2xl flex-shrink-0 ${cat.bg} text-white"><i data-lucide="${cat.icon}" class="w-5 h-5 md:w-6 md:h-6"></i></div><div class="min-w-0 flex-1"><span class="text-[9px] font-extrabold block tracking-wider mb-0.5 truncate ${cat.text}">${cat.en}</span><span class="font-extrabold text-slate-700 text-sm block truncate">${cat.ja}</span></div></button>`; }).join("");
-            const currentCatMeta = localCategories.find(c => c.id === activeCategory);
+            // ★ バグ修正箇所③：ボタンを描画する際にも cat.id ではなく cat.docId を使うように修正
+            studentCategoriesGrid.innerHTML = localCategories.map(cat => { const isActive = activeCategory === cat.docId; const borderClass = isActive ? cat.border : 'border-slate-100'; const shadowClass = isActive ? 'shadow-md -translate-y-1' : 'shadow-sm'; return `<button onclick="selectCategory('${cat.docId}')" class="bg-white border-4 ${borderClass} p-3.5 md:p-4 rounded-3xl ${shadowClass} transition-all w-full flex items-center gap-3 text-left"><div class="p-2.5 md:p-3 rounded-2xl flex-shrink-0 ${cat.bg} text-white"><i data-lucide="${cat.icon}" class="w-5 h-5 md:w-6 md:h-6"></i></div><div class="min-w-0 flex-1"><span class="text-[9px] font-extrabold block tracking-wider mb-0.5 truncate ${cat.text}">${cat.en}</span><span class="font-extrabold text-slate-700 text-sm block truncate">${cat.ja}</span></div></button>`; }).join("");
+            
+            // ★ バグ修正箇所④：選択中のカテゴリを探す際も c.docId で照合する
+            const currentCatMeta = localCategories.find(c => c.docId === activeCategory);
             if (currentCatMeta) {
                 document.getElementById("selected-cat-ja").textContent = currentCatMeta.ja; document.getElementById("selected-cat-en").textContent = currentCatMeta.en; document.getElementById("selected-cat-icon-container").className = `p-2.5 md:p-3 rounded-2xl text-white shadow-md ${currentCatMeta.bg}`; document.getElementById("selected-cat-icon").setAttribute("data-lucide", currentCatMeta.icon);
                 const catQuestions = localQuestions.filter(q => q.main_category === currentCatMeta.ja); const uniqueSubCats = [...new Set(catQuestions.map(q => q.sub_category))].filter(Boolean); uniqueSubCats.sort(); 
