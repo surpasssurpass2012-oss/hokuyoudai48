@@ -120,7 +120,9 @@
                     <span id="links-count-badge" class="self-start sm:self-auto bg-amber-100 text-amber-800 border border-amber-200 text-xs px-3 py-1.5 rounded-full font-extrabold flex-shrink-0">クエスト: 0個</span>
                 </div>
                 <div id="student-quests-grid" class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 max-w-4xl mx-auto w-full"></div>
-                <div id="student-empty-state" class="hidden flex flex-col items-center justify-center py-12 md:py-16 text-center"><span class="text-5xl md:text-6xl mb-4 animate-float">💤</span><h4 class="text-base md:text-lg font-extrabold text-slate-700">準備中のクエスト</h4><p class="text-xs md:text-sm text-slate-400 max-w-xs mt-2 font-bold leading-relaxed">まだこの冒険にはクエストがないみたい。<br>先生が用意するまで少し待っててね！</p></div>
+                
+                <!-- ヒント付きの準備中画面 -->
+                <div id="student-empty-state" class="hidden flex flex-col items-center justify-center py-12 md:py-16 text-center"></div>
             </div>
         </section>
 
@@ -314,7 +316,6 @@
 
         function syncFirestoreData() {
             if (!currentUser) return; 
-            // ★ バグ修正箇所①：.id ではなく .docId で初期カテゴリを設定する
             onSnapshot(collection(db, 'categories'), (snapshot) => { localCategories = []; snapshot.forEach(doc => { localCategories.push({ docId: doc.id, ...doc.data() }); }); localCategories.sort((a, b) => (a.order || 0) - (b.order || 0)); if (localCategories.length > 0 && !activeCategory) activeCategory = localCategories[0].docId; updateUI(); });
             onSnapshot(collection(db, 'questions'), (snapshot) => { localQuestions = []; snapshot.forEach(doc => { localQuestions.push({ docId: doc.id, ...doc.data() }); }); updateUI(); updateAdminHistoryUI(); });
             onSnapshot(collection(db, 'history'), (snapshot) => { localHistory = []; snapshot.forEach(doc => { localHistory.push({ docId: doc.id, ...doc.data() }); }); updateAdminHistoryUI(); if(!isAdmin) updateUI(); });
@@ -327,7 +328,7 @@
 
         function showLoginView() { document.getElementById("view-login").classList.remove("hidden"); document.getElementById("view-student").classList.add("hidden"); document.getElementById("view-admin").classList.add("hidden"); document.getElementById("view-quiz").classList.add("hidden"); document.getElementById("view-quiz-finish").classList.add("hidden"); document.getElementById("user-status-bar").classList.add("hidden"); }
         function showStudentView() { document.getElementById("view-login").classList.add("hidden"); document.getElementById("view-student").classList.remove("hidden"); document.getElementById("view-admin").classList.add("hidden"); document.getElementById("view-quiz").classList.add("hidden"); document.getElementById("view-quiz-finish").classList.add("hidden"); document.getElementById("user-status-bar").classList.remove("hidden"); const badge = document.getElementById("user-badge"); badge.textContent = `👤 ${currentStudentId}`; badge.className = "hidden sm:inline-block text-xs bg-sky-100 text-sky-800 border-2 border-sky-200 px-4 py-1.5 rounded-full font-bold"; updateUI(); }
-        function showAdminView() { document.getElementById("view-login").classList.add("hidden"); document.getElementById("view-student").classList.add("hidden"); document.getElementById("view-admin").classList.remove("hidden"); document.getElementById("view-quiz").classList.add("hidden"); document.getElementById("view-quiz-finish").classList.add("hidden"); document.getElementById("user-status-bar").remove("hidden"); const badge = document.getElementById("user-badge"); badge.textContent = "👑 管理者モード"; badge.className = "hidden sm:inline-block text-xs bg-blue-100 text-blue-800 border-2 border-blue-200 px-4 py-1.5 rounded-full font-bold"; switchAdminTab('history'); updateUI(); updateAdminHistoryUI(); }
+        function showAdminView() { document.getElementById("view-login").classList.add("hidden"); document.getElementById("view-student").classList.add("hidden"); document.getElementById("view-admin").classList.remove("hidden"); document.getElementById("view-quiz").classList.add("hidden"); document.getElementById("view-quiz-finish").classList.add("hidden"); document.getElementById("user-status-bar").classList.remove("hidden"); const badge = document.getElementById("user-badge"); badge.textContent = "👑 管理者モード"; badge.className = "hidden sm:inline-block text-xs bg-blue-100 text-blue-800 border-2 border-blue-200 px-4 py-1.5 rounded-full font-bold"; switchAdminTab('history'); updateUI(); updateAdminHistoryUI(); }
 
         window.switchAdminTab = function(tabName) {
             const tabs = ['history', 'questions', 'settings'];
@@ -392,7 +393,8 @@
         }
 
         window.startQuiz = function(subCategoryName) {
-            const questionsForQuest = localQuestions.filter(q => q.sub_category === subCategoryName);
+            // ★ 改修：空白による不一致を防ぐため、trim() を追加して確実に取り出す
+            const questionsForQuest = localQuestions.filter(q => (q.sub_category || "").trim() === subCategoryName.trim());
             if(questionsForQuest.length === 0) return;
             quizState = { questions: questionsForQuest, currentIndex: 0, score: 0, details: [], questName: subCategoryName };
             initQuizUI();
@@ -406,8 +408,10 @@
             document.getElementById("quiz-result-area").classList.add("hidden"); 
             document.getElementById("quiz-explanation-text").innerText = "";
             
-            const isSort = q.type === 'sort';
-            const isReading = q.type === 'reading';
+            // ★ 改修：大文字・小文字・空白のブレを自動修正して確実に判定する
+            const qType = String(q.type || "default").toLowerCase().trim();
+            const isSort = qType === 'sort';
+            const isReading = qType === 'reading';
 
             if (isReading) {
                 document.getElementById("quiz-options-grid").classList.add("hidden"); 
@@ -557,8 +561,6 @@
         }
 
         window.closeQuiz = function() { if(countdownTimer) clearInterval(countdownTimer); document.getElementById("view-quiz").classList.add("hidden"); document.getElementById("view-quiz-finish").classList.add("hidden"); showStudentView(); }
-        
-        // ★ バグ修正箇所②：cat.id ではなく cat.docId で照合する
         window.selectCategory = function(categoryKey) { activeCategory = categoryKey; updateUI(); }
         window.setStudentSort = function(mode) { adminStudentSortMode = mode; updateAdminHistoryUI(); }
         
@@ -600,8 +602,9 @@
                         const qs = groupedQs[subCat];
                         qs.sort((a, b) => { const idA = parseInt(a.id, 10) || 0; const idB = parseInt(b.id, 10) || 0; return idA - idB; });
                         const qCards = qs.map(q => {
-                            const isSort = q.type === 'sort';
-                            const isReading = q.type === 'reading'; 
+                            const qType = String(q.type || "default").toLowerCase().trim();
+                            const isSort = qType === 'sort';
+                            const isReading = qType === 'reading'; 
                             
                             let typeBadge = '';
                             if (isSort) {
@@ -639,19 +642,29 @@
             }
 
             const studentCategoriesGrid = document.getElementById("student-categories-grid");
-            // ★ バグ修正箇所③：ボタンを描画する際にも cat.id ではなく cat.docId を使うように修正
             studentCategoriesGrid.innerHTML = localCategories.map(cat => { const isActive = activeCategory === cat.docId; const borderClass = isActive ? cat.border : 'border-slate-100'; const shadowClass = isActive ? 'shadow-md -translate-y-1' : 'shadow-sm'; return `<button onclick="selectCategory('${cat.docId}')" class="bg-white border-4 ${borderClass} p-3.5 md:p-4 rounded-3xl ${shadowClass} transition-all w-full flex items-center gap-3 text-left"><div class="p-2.5 md:p-3 rounded-2xl flex-shrink-0 ${cat.bg} text-white"><i data-lucide="${cat.icon}" class="w-5 h-5 md:w-6 md:h-6"></i></div><div class="min-w-0 flex-1"><span class="text-[9px] font-extrabold block tracking-wider mb-0.5 truncate ${cat.text}">${cat.en}</span><span class="font-extrabold text-slate-700 text-sm block truncate">${cat.ja}</span></div></button>`; }).join("");
             
-            // ★ バグ修正箇所④：選択中のカテゴリを探す際も c.docId で照合する
             const currentCatMeta = localCategories.find(c => c.docId === activeCategory);
             if (currentCatMeta) {
                 document.getElementById("selected-cat-ja").textContent = currentCatMeta.ja; document.getElementById("selected-cat-en").textContent = currentCatMeta.en; document.getElementById("selected-cat-icon-container").className = `p-2.5 md:p-3 rounded-2xl text-white shadow-md ${currentCatMeta.bg}`; document.getElementById("selected-cat-icon").setAttribute("data-lucide", currentCatMeta.icon);
-                const catQuestions = localQuestions.filter(q => q.main_category === currentCatMeta.ja); const uniqueSubCats = [...new Set(catQuestions.map(q => q.sub_category))].filter(Boolean); uniqueSubCats.sort(); 
+                
+                // ★ 改修：空白のズレを自動修正して照合する
+                const catQuestions = localQuestions.filter(q => (q.main_category || "").trim() === (currentCatMeta.ja || "").trim()); 
+                
+                const uniqueSubCats = [...new Set(catQuestions.map(q => (q.sub_category || "").trim()))].filter(Boolean); 
+                uniqueSubCats.sort(); 
+                
                 const questsGrid = document.getElementById("student-quests-grid"); const emptyState = document.getElementById("student-empty-state"); document.getElementById("links-count-badge").textContent = `クエスト: ${uniqueSubCats.length}個`;
-                if (uniqueSubCats.length === 0) { questsGrid.innerHTML = ""; emptyState.classList.remove("hidden"); } else {
+                
+                if (uniqueSubCats.length === 0) { 
+                    questsGrid.innerHTML = ""; 
+                    // ★ 改修：もし空っぽだった場合、先生に原因をお知らせするヒントを表示！
+                    emptyState.innerHTML = `<span class="text-5xl md:text-6xl mb-4 animate-float">💤</span><h4 class="text-base md:text-lg font-extrabold text-slate-700">準備中のクエスト</h4><p class="text-xs md:text-sm text-slate-400 max-w-xs mt-2 font-bold leading-relaxed">まだこの冒険にはクエストがないみたい。<br>先生が用意するまで少し待っててね！</p><div class="mt-6 p-4 bg-rose-50 border-2 border-rose-200 rounded-2xl text-left max-w-xs text-xs font-bold text-rose-500 shadow-sm"><p class="text-sm mb-1">【先生へ：表示されない原因】</p>① CSVの「main_category」の文字が「${currentCatMeta.ja}」と完全に一致していない。<br>② CSVのID欄が空欄のままアップロードされたため、問題が読み込まれていない。</div>`;
+                    emptyState.classList.remove("hidden"); 
+                } else {
                     emptyState.classList.add("hidden");
                     questsGrid.innerHTML = uniqueSubCats.map(subCat => { 
-                        const totalQCount = catQuestions.filter(q => q.sub_category === subCat).length; 
+                        const totalQCount = catQuestions.filter(q => (q.sub_category || "").trim() === subCat).length; 
                         const myQuestHistory = localHistory.filter(h => h.studentId === currentStudentId && h.quest === subCat);
                         let maxScore = -1; myQuestHistory.forEach(h => { if(h.score > maxScore) maxScore = h.score; });
                         let badgeHTML = '';
@@ -727,7 +740,58 @@
         }
 
         window.exportCSV = async function(isTemplate = false) { const headers = ["id", "main_category", "sub_category", "type", "question", "sentence", "answer1", "answer2", "option1", "option2", "option3", "option4", "option5", "option6", "option7", "option8", "explanation"]; let dataToExport = []; if (isTemplate) { let dummy = {}; headers.forEach(h => dummy[h] = ""); dummy.id = "1001"; dummy.main_category = "語法・文法"; dummy.sub_category = "1 動詞の語法①"; dummy.type = "default"; dummy.question = "次の（ ）に入る最も適切な語を選びなさい"; dummy.sentence = "Let's ( ) the program tomorrow."; dummy.answer1 = "discuss"; dummy.option1 = "discuss"; dummy.option2 = "talk"; dummy.option3 = "discuss of"; dummy.option4 = "chat"; dummy.explanation = "【訳】あとでその計画について話し合おう。 discussは他動詞なので前置詞は不要。"; dataToExport.push(dummy); } else { showToast("データを集めています..."); try { const qSnap = await getDocs(collection(db, 'questions')); qSnap.forEach(doc => { const data = doc.data(); let row = {}; headers.forEach(h => { row[h] = data[h] || ""; }); dataToExport.push(row); }); if (dataToExport.length === 0) { showToast("まだ問題が登録されていません。"); return; } } catch (error) { showToast("取得に失敗しました。"); return; } } const csv = Papa.unparse({ fields: headers, data: dataToExport }, { quotes: true }); const bom = new Uint8Array([0xEF, 0xBB, 0xBF]); const blob = new Blob([bom, csv], { type: "text/csv;charset=utf-8;" }); const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = url; a.download = isTemplate ? "template_english_space.csv" : "backup_english_space_questions.csv"; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url); showToast(isTemplate ? "テンプレートをダウンロードしました📥" : "全データを出力しました！📥"); }
-        window.handleCSVUpload = function(event) { const file = event.target.files[0]; if (!file) return; showToast("CSVを解析しています..."); Papa.parse(file, { header: true, skipEmptyLines: true, complete: async function(results) { const data = results.data; if (data.length === 0) { showToast("エラー: データが空です"); return; } showToast(`${data.length}件の登録を開始します...`); try { let batch = writeBatch(db); let count = 0; for (const row of data) { if (!row.id || String(row.id).trim() === "") continue; const docId = String(row.id).trim(); batch.set(doc(db, "questions", docId), { id: docId, main_category: String(row.main_category || "").trim(), sub_category: String(row.sub_category || "").trim(), type: String(row.type || "default").trim(), question: String(row.question || "").trim(), sentence: String(row.sentence || "").trim(), answer1: String(row.answer1 || "").trim(), answer2: String(row.answer2 || "").trim(), option1: String(row.option1 || "").trim(), option2: String(row.option2 || "").trim(), option3: String(row.option3 || "").trim(), option4: String(row.option4 || "").trim(), option5: String(row.option5 || "").trim(), option6: String(row.option6 || "").trim(), option7: String(row.option7 || "").trim(), option8: String(row.option8 || "").trim(), explanation: String(row.explanation || "").trim(), updatedAt: new Date().toISOString() }); count++; if (count % 450 === 0) { await batch.commit(); batch = writeBatch(db); } } if (count % 450 !== 0) await batch.commit(); showToast(`大成功！ ${count}件の問題を登録しました✨`); event.target.value = ""; } catch (error) { showToast("登録中にエラーが発生しました"); } } }); }
+        window.handleCSVUpload = function(event) { 
+            const file = event.target.files[0]; if (!file) return; showToast("CSVを解析しています..."); 
+            Papa.parse(file, { 
+                header: true, skipEmptyLines: true, 
+                complete: async function(results) { 
+                    const data = results.data; 
+                    if (data.length === 0) { showToast("エラー: データが空です"); return; } 
+                    showToast(`${data.length}行の登録を開始します...`); 
+                    try { 
+                        let batch = writeBatch(db); let count = 0; 
+                        for (const row of data) { 
+                            // 空白行はスキップ
+                            if (!row.main_category && !row.question && !row.sentence) continue; 
+                            
+                            // ★ 改修：IDが空欄なら自動で生成してあげる！
+                            let docId = String(row.id || "").trim(); 
+                            if (docId === "") {
+                                docId = "q_" + Date.now() + "_" + Math.floor(Math.random() * 10000);
+                            }
+
+                            batch.set(doc(db, "questions", docId), { 
+                                id: docId, 
+                                main_category: String(row.main_category || "").trim(), 
+                                sub_category: String(row.sub_category || "").trim(), 
+                                type: String(row.type || "default").trim().toLowerCase(), // ★ 改修：大文字も全て小文字に揃える
+                                question: String(row.question || "").trim(), 
+                                sentence: String(row.sentence || "").trim(), 
+                                answer1: String(row.answer1 || "").trim(), 
+                                answer2: String(row.answer2 || "").trim(), 
+                                option1: String(row.option1 || "").trim(), 
+                                option2: String(row.option2 || "").trim(), 
+                                option3: String(row.option3 || "").trim(), 
+                                option4: String(row.option4 || "").trim(), 
+                                option5: String(row.option5 || "").trim(), 
+                                option6: String(row.option6 || "").trim(), 
+                                option7: String(row.option7 || "").trim(), 
+                                option8: String(row.option8 || "").trim(), 
+                                explanation: String(row.explanation || "").trim(), 
+                                updatedAt: new Date().toISOString() 
+                            }); 
+                            count++; 
+                            if (count % 450 === 0) { await batch.commit(); batch = writeBatch(db); } 
+                        } 
+                        if (count % 450 !== 0) await batch.commit(); 
+                        showToast(`大成功！ ${count}件の問題を登録しました✨`); 
+                        event.target.value = ""; 
+                    } catch (error) { 
+                        showToast("登録中にエラーが発生しました"); 
+                    } 
+                } 
+            }); 
+        }
         function showToast(message) { const toast = document.createElement("div"); toast.className = "fixed bottom-5 right-5 z-50 bg-slate-800 text-white px-5 py-3 rounded-2xl shadow-xl flex items-center gap-2 animate-float text-sm font-bold"; toast.innerHTML = `<span>✨</span><span>${message}</span>`; document.body.appendChild(toast); setTimeout(() => { toast.classList.add("opacity-0", "transition-opacity", "duration-500"); setTimeout(() => toast.remove(), 500); }, 3000); }
     </script>
 </body>
