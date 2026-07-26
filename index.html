@@ -116,10 +116,8 @@
             
             <div class="bg-white rounded-4xl shadow-sm border-4 border-yellow-100/70 p-4 md:p-10 relative overflow-hidden">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b-2 border-slate-100 pb-4 mb-5 gap-3">
-                    <!-- ★ フリーズの原因だった箇所を修正 ★ -->
                     <div class="flex items-center gap-3 min-w-0">
                         <div id="selected-cat-icon-container" class="p-2.5 rounded-xl text-white shadow-md flex-shrink-0">
-                            <!-- ここがJavaScriptで丸ごと入れ替わります -->
                         </div>
                         <div class="min-w-0">
                             <span id="selected-cat-en" class="text-[9px] md:text-[11px] font-extrabold tracking-widest text-slate-400 block truncate uppercase">CATEGORY</span>
@@ -392,9 +390,17 @@
             }, 1000);
         }
 
+        // ★ 改修箇所：今日のランダム10問からreadingを除外する
         window.startDailyQuest = function() {
-            if(localQuestions.length === 0) { showToast("まだ問題が登録されていません"); return; }
-            let shuffled = shuffleArray([...localQuestions]);
+            // readingタイプを除外した「テスト用」の問題だけを抽出
+            const validQuestions = localQuestions.filter(q => {
+                const qType = String(q.type || "default").toLowerCase().trim();
+                return qType !== 'reading';
+            });
+
+            if(validQuestions.length === 0) { showToast("テスト形式の問題がまだ登録されていません"); return; }
+            
+            let shuffled = shuffleArray([...validQuestions]);
             let selected = shuffled.slice(0, 10); 
             quizState = { questions: selected, currentIndex: 0, score: 0, details: [], questName: "🎯 今日のランダム10問" };
             initQuizUI();
@@ -650,7 +656,6 @@
             const studentCategoriesGrid = document.getElementById("student-categories-grid");
             studentCategoriesGrid.innerHTML = localCategories.map(cat => { const isActive = activeCategory === cat.docId; const borderClass = isActive ? cat.border : 'border-slate-100'; const shadowClass = isActive ? 'shadow-md -translate-y-1' : 'shadow-sm'; return `<button onclick="selectCategory('${cat.docId}')" class="bg-white border-4 ${borderClass} p-3.5 md:p-4 rounded-3xl ${shadowClass} transition-all w-full flex items-center gap-3 text-left"><div class="p-2.5 md:p-3 rounded-2xl flex-shrink-0 ${cat.bg} text-white"><i data-lucide="${cat.icon}" class="w-5 h-5 md:w-6 md:h-6"></i></div><div class="min-w-0 flex-1"><span class="text-[9px] font-extrabold block tracking-wider mb-0.5 truncate ${cat.text}">${cat.en}</span><span class="font-extrabold text-slate-700 text-sm block truncate">${cat.ja}</span></div></button>`; }).join("");
             
-            // ★ 安全対策：カテゴリが見つからなかったら最初のものを強制選択
             let currentCatMeta = localCategories.find(c => c.docId === activeCategory);
             if (!currentCatMeta && localCategories.length > 0) {
                 activeCategory = localCategories[0].docId;
@@ -665,7 +670,6 @@
                 if (titleJa) titleJa.textContent = currentCatMeta.ja; 
                 if (titleEn) titleEn.textContent = currentCatMeta.en; 
                 
-                // ★ 修正箇所：アイコンを入れ替えるのではなく、丸ごと作り直す（エラー完全防止）
                 if (iconContainer) {
                     iconContainer.className = `p-2.5 md:p-3 rounded-2xl text-white shadow-md flex-shrink-0 ${currentCatMeta.bg}`; 
                     iconContainer.innerHTML = `<i data-lucide="${currentCatMeta.icon}" class="w-5 h-5 md:w-7 md:h-7"></i>`;
