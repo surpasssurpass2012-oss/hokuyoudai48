@@ -390,9 +390,7 @@
             }, 1000);
         }
 
-        // ★ 改修箇所：今日のランダム10問からreadingを除外する
         window.startDailyQuest = function() {
-            // readingタイプを除外した「テスト用」の問題だけを抽出
             const validQuestions = localQuestions.filter(q => {
                 const qType = String(q.type || "default").toLowerCase().trim();
                 return qType !== 'reading';
@@ -406,10 +404,30 @@
             initQuizUI();
         }
 
+        // ★ 新規改修：テストならシャッフル、リーディングならID順をキープする
         window.startQuiz = function(subCategoryName) {
             const questionsForQuest = localQuestions.filter(q => (q.sub_category || "").trim() === subCategoryName.trim());
             if(questionsForQuest.length === 0) return;
-            quizState = { questions: questionsForQuest, currentIndex: 0, score: 0, details: [], questName: subCategoryName };
+
+            // リーディングタイプが含まれているかチェック
+            const isReadingQuest = questionsForQuest.some(q => String(q.type || "default").toLowerCase().trim() === 'reading');
+
+            let finalQuestions = [...questionsForQuest];
+
+            if (!isReadingQuest) {
+                // リーディング以外（テスト）の場合は毎回順番をシャッフル！
+                finalQuestions = shuffleArray(finalQuestions);
+            } else {
+                // リーディングの場合は、教科書の順番（ID順）を守る！
+                finalQuestions.sort((a, b) => {
+                    const numA = parseInt(a.id, 10);
+                    const numB = parseInt(b.id, 10);
+                    if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
+                    return String(a.id).localeCompare(String(b.id));
+                });
+            }
+
+            quizState = { questions: finalQuestions, currentIndex: 0, score: 0, details: [], questName: subCategoryName };
             initQuizUI();
         }
 
