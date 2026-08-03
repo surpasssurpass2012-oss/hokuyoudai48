@@ -162,14 +162,14 @@
 
                 <div id="quiz-reading-area" class="mb-6 hidden">
                     <button id="reading-show-btn" onclick="showReadingAnswer()" class="w-full bg-sky-100 hover:bg-sky-200 text-sky-700 font-extrabold py-5 px-6 rounded-2xl shadow-sm transition-all flex items-center justify-center gap-2 text-lg border-4 border-sky-200 active:scale-95">
-                        <i data-lucide="eye" class="w-6 h-6"></i><span>訳と解説を見る</span>
+                        <i data-lucide="eye" class="w-6 h-6"></i><span id="reading-show-text">訳と解説を見る</span>
                     </button>
                 </div>
 
                 <div id="quiz-result-area" class="hidden animate-fade-in">
                     <div id="quiz-result-badge" class="text-center text-2xl font-extrabold mb-4 py-2 rounded-2xl"></div>
                     <div class="bg-slate-50 p-5 rounded-2xl border-2 border-slate-100 mb-6">
-                        <p class="text-xs font-bold text-slate-400 mb-2 flex items-center gap-1"><i data-lucide="book-open" class="w-4 h-4"></i> 解説・訳</p>
+                        <p id="reading-explanation-label" class="text-xs font-bold text-slate-400 mb-2 flex items-center gap-1"><i data-lucide="book-open" class="w-4 h-4"></i> 解説・訳</p>
                         <p id="quiz-explanation-text" class="text-sm md:text-base font-bold text-slate-700 leading-relaxed whitespace-pre-wrap"></p>
                     </div>
 
@@ -182,7 +182,7 @@
                             <i data-lucide="arrow-left" class="w-5 h-5"></i><span>前へ</span>
                         </button>
                         <button id="reading-next-btn" onclick="nextQuizReading()" class="w-2/3 bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold py-4 px-4 rounded-2xl shadow-md transition-all flex items-center justify-center gap-2 text-lg border-4 border-emerald-600 active:scale-95">
-                            <span>次のフレーズへ</span><i data-lucide="arrow-right" class="w-5 h-5"></i>
+                            <span id="reading-next-text">次のフレーズへ</span><i data-lucide="arrow-right" class="w-5 h-5"></i>
                         </button>
                     </div>
                 </div>
@@ -393,7 +393,8 @@
         window.startDailyQuest = function() {
             const validQuestions = localQuestions.filter(q => {
                 const qType = String(q.type || "default").toLowerCase().trim();
-                return qType !== 'reading';
+                // quizも正解不正解がないのでランダム10問からは除外
+                return qType !== 'reading' && qType !== 'quiz';
             });
 
             if(validQuestions.length === 0) { showToast("テスト形式の問題がまだ登録されていません"); return; }
@@ -404,21 +405,16 @@
             initQuizUI();
         }
 
-        // ★ 新規改修：テストならシャッフル、リーディングならID順をキープする
         window.startQuiz = function(subCategoryName) {
             const questionsForQuest = localQuestions.filter(q => (q.sub_category || "").trim() === subCategoryName.trim());
             if(questionsForQuest.length === 0) return;
 
-            // リーディングタイプが含まれているかチェック
             const isReadingQuest = questionsForQuest.some(q => String(q.type || "default").toLowerCase().trim() === 'reading');
-
             let finalQuestions = [...questionsForQuest];
 
             if (!isReadingQuest) {
-                // リーディング以外（テスト）の場合は毎回順番をシャッフル！
                 finalQuestions = shuffleArray(finalQuestions);
             } else {
-                // リーディングの場合は、教科書の順番（ID順）を守る！
                 finalQuestions.sort((a, b) => {
                     const numA = parseInt(a.id, 10);
                     const numB = parseInt(b.id, 10);
@@ -442,8 +438,9 @@
             const qType = String(q.type || "default").toLowerCase().trim();
             const isSort = qType === 'sort';
             const isReading = qType === 'reading';
+            const isQuiz = qType === 'quiz';
 
-            if (isReading) {
+            if (isReading || isQuiz) {
                 document.getElementById("quiz-options-grid").classList.add("hidden"); 
                 document.getElementById("quiz-sort-area").classList.add("hidden");
                 document.getElementById("quiz-reading-area").classList.remove("hidden");
@@ -454,6 +451,11 @@
                 
                 document.getElementById("quiz-next-btn").classList.add("hidden");
                 document.getElementById("quiz-next-btn").classList.remove("flex");
+
+                // ★ 追加：フラッシュカードとリーディングでテキストを切り替え
+                document.getElementById("reading-show-text").textContent = isQuiz ? "答えを見る" : "訳と解説を見る";
+                document.getElementById("reading-explanation-label").innerHTML = isQuiz ? `<i data-lucide="book-open" class="w-4 h-4"></i> 答え・解説` : `<i data-lucide="book-open" class="w-4 h-4"></i> 解説・訳`;
+
             } else if (isSort) {
                 document.getElementById("quiz-options-grid").classList.add("hidden"); 
                 document.getElementById("quiz-reading-area").classList.add("hidden");
@@ -482,6 +484,9 @@
 
         window.showReadingAnswer = function() {
             const q = quizState.questions[quizState.currentIndex];
+            const qType = String(q.type || "default").toLowerCase().trim();
+            const isQuiz = qType === 'quiz';
+
             document.getElementById("reading-show-btn").classList.add("hidden");
             
             const navArea = document.getElementById("reading-nav-buttons");
@@ -498,11 +503,11 @@
             if (quizState.currentIndex === quizState.questions.length - 1) {
                 nextBtn.innerHTML = `<span>完了して結果を見る</span><i data-lucide="award" class="w-5 h-5"></i>`;
             } else {
-                nextBtn.innerHTML = `<span>次のフレーズへ</span><i data-lucide="arrow-right" class="w-5 h-5"></i>`;
+                nextBtn.innerHTML = `<span>次の${isQuiz ? '問題' : 'フレーズ'}へ</span><i data-lucide="arrow-right" class="w-5 h-5"></i>`;
             }
 
             document.getElementById("quiz-result-badge").className = "hidden"; 
-            document.getElementById("quiz-explanation-text").innerText = q.explanation || "（解説・訳の登録がありません）"; 
+            document.getElementById("quiz-explanation-text").innerText = q.explanation || (isQuiz ? "（答えの登録がありません）" : "（解説・訳の登録がありません）"); 
             document.getElementById("quiz-result-area").classList.remove("hidden");
             lucide.createIcons();
         }
@@ -635,12 +640,15 @@
                             const qType = String(q.type || "default").toLowerCase().trim();
                             const isSort = qType === 'sort';
                             const isReading = qType === 'reading'; 
+                            const isQuiz = qType === 'quiz';
                             
                             let typeBadge = '';
                             if (isSort) {
                                 typeBadge = `<span class="bg-purple-100 text-purple-700 px-2 py-0.5 rounded border border-purple-200 text-[10px] font-extrabold shadow-sm">並べ替え</span>`;
                             } else if (isReading) {
                                 typeBadge = `<span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded border border-emerald-200 text-[10px] font-extrabold shadow-sm">読解</span>`;
+                            } else if (isQuiz) {
+                                typeBadge = `<span class="bg-pink-100 text-pink-700 px-2 py-0.5 rounded border border-pink-200 text-[10px] font-extrabold shadow-sm">一問一答</span>`;
                             } else {
                                 typeBadge = `<span class="bg-blue-100 text-blue-700 px-2 py-0.5 rounded border border-blue-200 text-[10px] font-extrabold shadow-sm">4択</span>`;
                             }
