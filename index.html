@@ -404,16 +404,21 @@
             initQuizUI();
         }
 
+        // ★ 追加・修正：quiz（一問一答）も順番通りに出題されるように変更
         window.startQuiz = function(subCategoryName) {
             const questionsForQuest = localQuestions.filter(q => (q.sub_category || "").trim() === subCategoryName.trim());
             if(questionsForQuest.length === 0) return;
 
             const isReadingQuest = questionsForQuest.some(q => String(q.type || "default").toLowerCase().trim() === 'reading');
+            const isQuizQuest = questionsForQuest.some(q => String(q.type || "default").toLowerCase().trim() === 'quiz'); // 追加
+
             let finalQuestions = [...questionsForQuest];
 
-            if (!isReadingQuest) {
+            // readingでもquizでもない（＝テスト）場合のみシャッフルする
+            if (!isReadingQuest && !isQuizQuest) {
                 finalQuestions = shuffleArray(finalQuestions);
             } else {
+                // readingとquizは、CSVのID順（順番通り）に出題する！
                 finalQuestions.sort((a, b) => {
                     const numA = parseInt(a.id, 10);
                     const numB = parseInt(b.id, 10);
@@ -435,16 +440,12 @@
 
             document.getElementById("quiz-current-num").textContent = quizState.currentIndex + 1; 
             
-            // ★ 改修：問題文の大きさをモードによって動的に変更！
             const qTextEl = document.getElementById("quiz-question-text");
-            // 4択などではデフォルトの指示文を用意し、フラッシュカード系では空白にする
             qTextEl.textContent = q.question || (isReading || isQuiz ? "" : "次の問題に答えなさい");
             
             if (isReading || isQuiz) {
-                // 特大サイズ、濃い色にして主役にする
                 qTextEl.className = "text-xl md:text-2xl font-extrabold text-slate-800 mb-3 leading-relaxed";
             } else {
-                // いつもの小さくてグレーの指示文
                 qTextEl.className = "text-sm md:text-base font-bold text-slate-500 mb-2";
             }
 
@@ -520,7 +521,6 @@
 
             document.getElementById("quiz-result-badge").className = "hidden"; 
             
-            // ★ 改修：解説（答え）の文字を特大にして主役にする！
             const expEl = document.getElementById("quiz-explanation-text");
             expEl.innerText = q.explanation || (isQuiz ? "（答えの登録がありません）" : "（解説・訳の登録がありません）"); 
             expEl.className = "text-xl md:text-3xl font-extrabold text-slate-800 leading-relaxed whitespace-pre-wrap mt-2";
@@ -588,7 +588,6 @@
             let expText = q.explanation || "解説はありません。";
             if (!isCorrect) { expText = `【正解】\n${correctAnswerStr}\n\n--------------------\n${expText}`; }
             
-            // ★ 改修：テストモードの時は解説を控えめな通常のサイズに戻す
             const expEl = document.getElementById("quiz-explanation-text");
             expEl.innerText = expText; 
             expEl.className = "text-sm md:text-base font-bold text-slate-700 leading-relaxed whitespace-pre-wrap mt-0";
