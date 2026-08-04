@@ -393,7 +393,6 @@
         window.startDailyQuest = function() {
             const validQuestions = localQuestions.filter(q => {
                 const qType = String(q.type || "default").toLowerCase().trim();
-                // quizも正解不正解がないのでランダム10問からは除外
                 return qType !== 'reading' && qType !== 'quiz';
             });
 
@@ -429,16 +428,30 @@
 
         function renderQuestion() {
             const q = quizState.questions[quizState.currentIndex];
-            document.getElementById("quiz-current-num").textContent = quizState.currentIndex + 1; 
-            document.getElementById("quiz-question-text").textContent = q.question || "次の問題に答えなさい"; 
-            document.getElementById("quiz-sentence-text").textContent = q.sentence || ""; 
-            document.getElementById("quiz-result-area").classList.add("hidden"); 
-            document.getElementById("quiz-explanation-text").innerText = "";
-            
             const qType = String(q.type || "default").toLowerCase().trim();
             const isSort = qType === 'sort';
             const isReading = qType === 'reading';
             const isQuiz = qType === 'quiz';
+
+            document.getElementById("quiz-current-num").textContent = quizState.currentIndex + 1; 
+            
+            // ★ 改修：問題文の大きさをモードによって動的に変更！
+            const qTextEl = document.getElementById("quiz-question-text");
+            // 4択などではデフォルトの指示文を用意し、フラッシュカード系では空白にする
+            qTextEl.textContent = q.question || (isReading || isQuiz ? "" : "次の問題に答えなさい");
+            
+            if (isReading || isQuiz) {
+                // 特大サイズ、濃い色にして主役にする
+                qTextEl.className = "text-xl md:text-2xl font-extrabold text-slate-800 mb-3 leading-relaxed";
+            } else {
+                // いつもの小さくてグレーの指示文
+                qTextEl.className = "text-sm md:text-base font-bold text-slate-500 mb-2";
+            }
+
+            document.getElementById("quiz-sentence-text").textContent = q.sentence || ""; 
+            document.getElementById("quiz-result-area").classList.add("hidden"); 
+            document.getElementById("quiz-explanation-text").innerText = "";
+            
 
             if (isReading || isQuiz) {
                 document.getElementById("quiz-options-grid").classList.add("hidden"); 
@@ -452,7 +465,6 @@
                 document.getElementById("quiz-next-btn").classList.add("hidden");
                 document.getElementById("quiz-next-btn").classList.remove("flex");
 
-                // ★ 追加：フラッシュカードとリーディングでテキストを切り替え
                 document.getElementById("reading-show-text").textContent = isQuiz ? "答えを見る" : "訳と解説を見る";
                 document.getElementById("reading-explanation-label").innerHTML = isQuiz ? `<i data-lucide="book-open" class="w-4 h-4"></i> 答え・解説` : `<i data-lucide="book-open" class="w-4 h-4"></i> 解説・訳`;
 
@@ -507,7 +519,12 @@
             }
 
             document.getElementById("quiz-result-badge").className = "hidden"; 
-            document.getElementById("quiz-explanation-text").innerText = q.explanation || (isQuiz ? "（答えの登録がありません）" : "（解説・訳の登録がありません）"); 
+            
+            // ★ 改修：解説（答え）の文字を特大にして主役にする！
+            const expEl = document.getElementById("quiz-explanation-text");
+            expEl.innerText = q.explanation || (isQuiz ? "（答えの登録がありません）" : "（解説・訳の登録がありません）"); 
+            expEl.className = "text-xl md:text-3xl font-extrabold text-slate-800 leading-relaxed whitespace-pre-wrap mt-2";
+            
             document.getElementById("quiz-result-area").classList.remove("hidden");
             lucide.createIcons();
         }
@@ -570,7 +587,13 @@
             else { badge.innerHTML = `<span class="text-rose-500 flex items-center justify-center gap-2">❌ ざんねん...</span>`; badge.className = "text-center text-2xl font-extrabold mb-4 py-3 rounded-2xl bg-rose-50 border-2 border-rose-200"; }
             let expText = q.explanation || "解説はありません。";
             if (!isCorrect) { expText = `【正解】\n${correctAnswerStr}\n\n--------------------\n${expText}`; }
-            document.getElementById("quiz-explanation-text").innerText = expText; document.getElementById("quiz-result-area").classList.remove("hidden");
+            
+            // ★ 改修：テストモードの時は解説を控えめな通常のサイズに戻す
+            const expEl = document.getElementById("quiz-explanation-text");
+            expEl.innerText = expText; 
+            expEl.className = "text-sm md:text-base font-bold text-slate-700 leading-relaxed whitespace-pre-wrap mt-0";
+            
+            document.getElementById("quiz-result-area").classList.remove("hidden");
             if (quizState.currentIndex === quizState.questions.length - 1) { const nextBtn = document.getElementById("quiz-next-btn"); nextBtn.innerHTML = `<span>結果を見る</span><i data-lucide="award" class="w-5 h-5"></i>`; nextBtn.className = "w-full bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold py-4 px-6 rounded-2xl shadow-md active:scale-[0.97] transition-all flex items-center justify-center gap-2 text-lg"; lucide.createIcons(); }
         }
 
