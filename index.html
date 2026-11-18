@@ -1272,7 +1272,7 @@
                 } else {
                     const groupedQs = {};
                     localQuestions.forEach(q => { const sub = q.sub_category || "未分類"; if(!groupedQs[sub]) groupedQs[sub] = []; groupedQs[sub].push(q); });
-                    const sortedKeys = Object.keys(groupedQs).sort();
+                   const sortedKeys = Object.keys(groupedQs).sort((a, b) => a.localeCompare(b, 'ja', { numeric: true }));
                     previewContainer.innerHTML = sortedKeys.map(subCat => {
                         const qs = groupedQs[subCat];
                         qs.sort((a, b) => { const idA = parseInt(a.id, 10) || 0; const idB = parseInt(b.id, 10) || 0; return idA - idB; });
@@ -1414,7 +1414,7 @@
                 
                 const catQuestions = localQuestions.filter(q => (q.main_category || "").trim() === (currentCatMeta.ja || "").trim()); 
                 const uniqueSubCats = [...new Set(catQuestions.map(q => (q.sub_category || "").trim()))].filter(Boolean); 
-                uniqueSubCats.sort(); 
+                uniqueSubCats.sort((a, b) => a.localeCompare(b, 'ja', { numeric: true }));
                 
                 const questsGrid = document.getElementById("student-quests-grid"); 
                 const emptyState = document.getElementById("student-empty-state"); 
